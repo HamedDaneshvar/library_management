@@ -5,6 +5,9 @@ from app.db.base_class import Base
 
 class Sell(Base):
     __tablename__ = "sells"
+    __mapper_args__ = {
+        'polymorphic_identity': 'sell',
+    }
 
     id = Column(Integer, primary_key=True, index=True)
     book_id = Column(Integer, ForeignKey('books.id'), nullable=False)
