@@ -73,9 +73,7 @@ async def create_category(
 @router.put("/{id}")
 async def update_category(
     id: int,
-    title: str | None = Body(None),
-    borrow_limit: int | None = Body(None),
-    borrow_price_per_day: int | None = Body(None),
+    request: schemas.CategoryUpdate,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
 ):
@@ -91,12 +89,12 @@ async def update_category(
     if not category_in or category_in.is_deleted:
         raise HTTPException(status_code=404, detail="Category not found")
 
-    if title is not None:
-        category_in.title = title
-    if borrow_limit is not None:
-        category_in.borrow_limit = borrow_limit
-    if borrow_price_per_day is not None:
-        category_in.borrow_price_per_day = borrow_price_per_day
+    if request.title is not None:
+        category_in.title = request.title
+    if request.borrow_limit is not None:
+        category_in.borrow_limit = request.borrow_limit
+    if request.borrow_price_per_day is not None:
+        category_in.borrow_price_per_day = request.borrow_price_per_day
 
     category = await crud.category.update(
         db,

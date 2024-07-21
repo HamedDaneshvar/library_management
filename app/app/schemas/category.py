@@ -12,4 +12,6 @@ class CategoryCreate(Category):
 
 
 class CategoryUpdate(Category):
-    pass
+    title: str | None
+    borrow_limit: int | None
+    borrow_price_per_day: int | None
