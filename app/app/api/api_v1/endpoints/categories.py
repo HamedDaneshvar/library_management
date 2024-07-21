@@ -34,6 +34,26 @@ async def get_categories(
     return APIResponse(categories)
 
 
+@router.get("/{id}")
+async def get_category(
+    id: int,
+    db: AsyncSession = Depends(deps.get_db_async),
+    current_user: models.User = Depends(deps.get_current_user),
+):
+    """
+    Retrieve a category.
+    """
+
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=401, detail="Unauthorized access")
+
+    category = await crud.category.get(db, id=id)
+    if not category or category.is_deleted:
+        raise HTTPException(status_code=404, detail="Category not found")
+
+    return APIResponse(category)
+
+
 @router.post("/")
 async def create_category(
     category_in: schemas.CategoryCreate,
