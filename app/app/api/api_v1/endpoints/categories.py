@@ -86,7 +86,7 @@ async def update_category(
 
 
 @router.delete("/{id}")
-async def update_category(
+async def delete_category(
     id: int,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
