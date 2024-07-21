@@ -14,4 +14,8 @@ class BookCreate(Book):
 
 
 class BookUpdate(Book):
-    pass
+    title: str | None
+    category_id: int | None
+    borrow_qty: int | None
+    sell_qty: int | None
+    sell_price: int | None

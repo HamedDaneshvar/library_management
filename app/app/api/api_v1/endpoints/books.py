@@ -76,11 +76,7 @@ async def create_book(
 @router.put("/{id}")
 async def update_book(
     id: int,
-    title: str | None = Body(None),
-    category_id: int | None = Body(None),
-    borrow_qty: int | None = Body(None),
-    sell_qty: int | None = Body(None),
-    sell_price: int | None = Body(None),
+    request: schemas.BookUpdate,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
 ):
@@ -96,16 +92,16 @@ async def update_book(
     if not book_in or book_in.is_deleted:
         raise HTTPException(status_code=404, detail="Book not found")
 
-    if title is not None:
-        book_in.title = title
-    if category_id is not None:
-        book_in.category_id = category_id
-    if borrow_qty is not None:
-        book_in.borrow_qty = borrow_qty
-    if sell_qty is not None:
-        book_in.sell_qty = sell_qty
-    if sell_price is not None:
-        book_in.sell_price = sell_price
+    if request.title is not None:
+        book_in.title = request.title
+    if request.category_id is not None:
+        book_in.category_id = request.category_id
+    if request.borrow_qty is not None:
+        book_in.borrow_qty = request.borrow_qty
+    if request.sell_qty is not None:
+        book_in.sell_qty = request.sell_qty
+    if request.sell_price is not None:
+        book_in.sell_price = request.sell_price
 
     book = await crud.book.update(
         db,
