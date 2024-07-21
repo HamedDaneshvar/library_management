@@ -106,6 +106,39 @@ async def me(
     """
     return APIResponse(current_user)
 
+
+@router.put("/charge")
+async def charge_account(
+    request: schemas.UpdateAmount,
+    db: AsyncSession = Depends(deps.get_db_async),
+    current_user: models.User = Depends(deps.get_current_user),
+) -> APIResponseType[schemas.User]:
+    """
+    Charge the amount of user
+    """
+
+    if request.user_id == current_user.id:
+        raise HTTPException(status_code=403,
+                            detail="You can not charge your account!")
+
+    user = await crud.user.get(db, id=request.user_id)
+    if not user:
+        raise exc.InternalServiceError(
+            status_code=404,
+            detail="User not found",
+            msg_code=utils.MessageCodes.not_found,
+        )
+
+    user_in_data = jsonable_encoder(user)
+    user_in = schemas.UserUpdate(**user_in_data)
+
+    if request.new_amount is not None:
+        user_in.amount += request.new_amount
+
+    user = await crud.user.update(db, db_obj=user, obj_in=user_in)
+    return APIResponse(user)
+
+
 @router.post("/reset-password/")
 @invalidate(namespace=namespace)
 async def reset_password(

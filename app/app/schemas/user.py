@@ -9,6 +9,7 @@ class UserBase(BaseModel):
     full_name: str | None = None
     is_active: bool | None = True
     is_superuser: bool = False
+    amount: float
 
 
 # Properties to receive via API on creation
@@ -42,3 +43,8 @@ class UserInDB(UserInDBBase):
 class LoginUser(BaseModel):
     email: EmailStr
     password: str
+
+
+class UpdateAmount(BaseModel):
+    user_id: int
+    new_amount: float
