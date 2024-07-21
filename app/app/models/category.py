@@ -1,7 +1,8 @@
 from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.expression import false
 from app.db.base_class import Base
-from .book import Book
+from app.models.book import Book
 
 
 class Category(Base):
@@ -11,5 +12,6 @@ class Category(Base):
     title = Column(String, index=True)
     borrow_limit = Column(Integer, nullable=False)
     borrow_price_per_day = Column(Integer, nullable=False)
+    is_deleted = Column(Boolean(), nullable=False, default=False)
 
-    books = relationship(Book, back_populates="category")
+    books = relationship('Book', back_populates="category")
