@@ -21,11 +21,11 @@ def upgrade() -> None:
         'sells',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('book_id', sa.Integer(), nullable=False),
-        sa.Column('superuser_id', sa.Integer(), nullable=False),
         sa.Column('user_id', sa.Integer(), nullable=False),
         sa.Column('price', sa.Float(), nullable=False),
+        sa.Column('created', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('modified', sa.DateTime(timezone=True), nullable=True),
         sa.ForeignKeyConstraint(['book_id'], ['books.id'], ),
-        sa.ForeignKeyConstraint(['superuser_id'], ['user.id'], ),
         sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
         sa.PrimaryKeyConstraint('id')
     )

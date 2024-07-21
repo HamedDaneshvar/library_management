@@ -14,5 +14,4 @@ class User(Base):
 
     sells = relationship('Sell', foreign_keys='Sell.user_id',
                          back_populates='user')
-    superuser_sells = relationship('Sell', foreign_keys='Sell.superuser_id',
-                                   back_populates='superuser')
+    payments = relationship('Payment', back_populates='user')

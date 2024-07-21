@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Float
-from sqlalchemy.orm import relationship, polymorphic_identity, polymorphic_relationship
+from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
 
@@ -18,5 +18,7 @@ class Payment(Base):
     category = relationship("Category", foreign_keys=[category_id])
     user = relationship("User", foreign_keys=[user_id])
 
-    # Polymorphic relationships
-    model = polymorphic_relationship(model_type)
+    def __repr__(self):
+        return f"<Payment(id={self.id}, \
+            model_type={self.model_type}, \
+            model_id={self.model_id}, price={self.price})>"
