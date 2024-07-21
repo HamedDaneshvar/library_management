@@ -15,3 +15,4 @@ class Book(Base):
     is_deleted = Column(Boolean(), nullable=False, default=False)
 
     category = relationship('Category', back_populates='books')
+    sells = relationship('Sell', back_populates='book')

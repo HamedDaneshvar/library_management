@@ -1,4 +1,5 @@
 from sqlalchemy import Boolean, Column, Integer, Float, String
+from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
 
@@ -10,3 +11,8 @@ class User(Base):
     is_active = Column(Boolean(), default=True)
     is_superuser = Column(Boolean(), default=False)
     amount = Column(Float, nullable=False, default=0.0)
+
+    sells = relationship('Sell', foreign_keys='Sell.user_id',
+                         back_populates='user')
+    superuser_sells = relationship('Sell', foreign_keys='Sell.superuser_id',
+                                   back_populates='superuser')
