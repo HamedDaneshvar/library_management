@@ -1,6 +1,6 @@
 from asyncio import iscoroutine
 from datetime import datetime
-from typing import Awaitable, Any, Generic, Type, TypeVar
+from typing import Awaitable, Any, Generic, Type, TypeVar, Union, List
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
@@ -145,3 +145,27 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             setattr(db_obj, "modified", datetime.now())
 
         return self._commit_refresh(db, db_obj=db_obj)
+
+    async def _filter_async(
+            self,
+            db: AsyncSession,
+            skip: int = 0,
+            limit: int = 100,
+            **kwargs
+    ) -> List[ModelType]:
+        query = select(self.model).filter_by(**kwargs)\
+            .offset(skip).limit(limit)
+        return await self._all(db.scalars(query))
+
+    def filter(
+        self,
+        db: Union[Session, AsyncSession],
+        skip: int = 0,
+        limit: int = 100,
+        **kwargs
+    ) -> Union[List[ModelType], Awaitable[List[ModelType]]]:
+        query = select(self.model).filter_by(**kwargs)\
+            .offset(skip).limit(limit)
+        if isinstance(db, AsyncSession):
+            return self._filter_async(db, skip=skip, limit=limit, **kwargs)
+        return self._all(db.scalars(query))
