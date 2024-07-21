@@ -8,6 +8,9 @@ class Book(BaseModel):
     sell_qty: int
     sell_price: int
 
+    class Config:
+        orm_mode = True
+
 
 class BookCreate(Book):
     pass
