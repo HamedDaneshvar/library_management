@@ -149,23 +149,31 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     async def _filter_async(
             self,
             db: AsyncSession,
-            skip: int = 0,
-            limit: int = 100,
+            *args,
+            skip: int = None,
+            limit: int = None,
             **kwargs
     ) -> List[ModelType]:
-        query = select(self.model).filter_by(**kwargs)\
-            .offset(skip).limit(limit)
+        query = select(self.model).filter(*args).filter_by(**kwargs)
+        if skip is not None:
+            query = query.offset(skip)
+        if limit is not None:
+            query = query.limit(limit)
         return await self._all(db.scalars(query))
 
     def filter(
         self,
         db: Union[Session, AsyncSession],
-        skip: int = 0,
-        limit: int = 100,
+        *args,
+        skip: int = None,
+        limit: int = None,
         **kwargs
     ) -> Union[List[ModelType], Awaitable[List[ModelType]]]:
-        query = select(self.model).filter_by(**kwargs)\
-            .offset(skip).limit(limit)
+        query = select(self.model).filter(*args).filter_by(**kwargs)
+        if skip is not None:
+            query = query.offset(skip)
+        if limit is not None:
+            query = query.limit(limit)
         if isinstance(db, AsyncSession):
-            return self._filter_async(db, skip=skip, limit=limit, **kwargs)
+            return self._filter_async(db, *args, skip=skip, limit=limit, **kwargs)
         return self._all(db.scalars(query))

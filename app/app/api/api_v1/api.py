@@ -1,8 +1,9 @@
 from fastapi import APIRouter
 
-from app.api.api_v1.endpoints import users, utils, categories, books
+from app.api.api_v1.endpoints import users, utils, categories, books, reports
 
 api_router = APIRouter()
+api_router.include_router(reports.router, prefix="/reports", tags=["reports"])
 api_router.include_router(categories.router,
                           prefix="/categories",
                           tags=["categories"])
