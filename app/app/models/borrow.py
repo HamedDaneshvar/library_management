@@ -18,6 +18,8 @@ class Status(Base):
     title = Column(String, index=True)
     is_deleted = Column(Boolean(), nullable=False, default=False)
 
+    activity_logs = relationship("BorrowActivityLog", back_populates="status")
+
 
 class Borrow(Base):
     __tablename__ = 'borrows'
@@ -41,7 +43,8 @@ class Borrow(Base):
                              back_populates='borrows_superuser')
     user = relationship("User", foreign_keys=[user_id],
                         back_populates='borrows_user')
-    user_penalty = relationship("UserPenalty", back_populates="user_penalty")
+    penalties = relationship("UserPenalty", back_populates="borrow")
+    activity_logs = relationship("BorrowActivityLog", back_populates="borrow")
 
 
 class BorrowActivityLog(Base):
@@ -52,8 +55,8 @@ class BorrowActivityLog(Base):
     status_id = Column(Integer, ForeignKey('status.id', ondelete="CASCADE"))
     is_deleted = Column(Boolean(), default=False)
 
-    borrow = relationship("Borrow", foreign_keys=[borrow_id])
-    status = relationship("Status", foreign_keys=[status_id])
+    borrow = relationship("Borrow", back_populates="activity_logs")
+    status = relationship("Status", back_populates="activity_logs")
 
 
 class UserPenalty(Base):
@@ -65,5 +68,5 @@ class UserPenalty(Base):
     borrow_penalty_day = Column(Integer)
     is_deleted = Column(Boolean(), default=False)
 
-    user = relationship("User", foreign_keys=[user_id])
-    borrow = relationship("Borrow", foreign_keys=[borrow_id])
+    user = relationship("User", back_populates="penalties")
+    borrow = relationship("Borrow", back_populates="penalties")

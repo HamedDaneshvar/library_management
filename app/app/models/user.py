@@ -22,8 +22,4 @@ class User(Base):
         foreign_keys='Borrow.superuser_id',
         back_populates='superuser'
     )
-    user_penalty = relationship(
-        'UserPenalty',
-        foreign_keys='UserPenalty.user_id',
-        back_populates='user'
-    )
+    penalties = relationship('UserPenalty', back_populates='user')
