@@ -5,11 +5,11 @@ from app.utils import APIResponseType, APIResponse
 from app import crud, models, schemas
 
 
-router = APIRouter()
+router = APIRouter(prefix="/status")
 namespace = "borrow"
 
 
-@router.get("/status")
+@router.get("/")
 async def get_all_status(
     skip: int = 0,
     limit: int = 10,
@@ -32,7 +32,7 @@ async def get_all_status(
     return APIResponse(status)
 
 
-@router.get("/status/{id}")
+@router.get("/{id}")
 async def get_status(
     id: int,
     db: AsyncSession = Depends(deps.get_db_async),
@@ -52,7 +52,7 @@ async def get_status(
     return APIResponse(status)
 
 
-@router.post("/status/")
+@router.post("/")
 async def create_status(
     status_in: schemas.StatusCreate,
     db: AsyncSession = Depends(deps.get_db_async),
@@ -68,7 +68,7 @@ async def create_status(
     return APIResponse(status)
 
 
-@router.put("/status/{id}")
+@router.put("/{id}")
 async def update_status(
     id: int,
     request: schemas.StatusUpdate,
@@ -94,7 +94,7 @@ async def update_status(
     return APIResponse(status)
 
 
-@router.delete("/status/{id}")
+@router.delete("/{id}")
 async def delete_status(
     id: int,
     db: AsyncSession = Depends(deps.get_db_async),
