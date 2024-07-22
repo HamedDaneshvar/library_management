@@ -6,7 +6,7 @@ class Book(BaseModel):
     category_id: int
     borrow_qty: int
     sell_qty: int
-    sell_price: int
+    sell_price: float
 
     class Config:
         orm_mode = True
@@ -21,4 +21,4 @@ class BookUpdate(Book):
     category_id: int | None
     borrow_qty: int | None
     sell_qty: int | None
-    sell_price: int | None
+    sell_price: float | None
