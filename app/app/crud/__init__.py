@@ -4,3 +4,4 @@ from .crud_category import category
 from .crud_book import book
 from .crud_sell import sell
 from .crud_payment import payment
+from .crud_borrow import status

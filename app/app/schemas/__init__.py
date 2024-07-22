@@ -6,3 +6,4 @@ from .category import *
 from .book import *
 from .sell import *
 from .payment import *
+from .borrow import *
