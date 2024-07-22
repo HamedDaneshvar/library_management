@@ -17,3 +17,4 @@ class Book(Base):
     category = relationship('Category', back_populates='books')
     sells = relationship('Sell', back_populates='book')
     payments = relationship('Payment', back_populates='book')
+    borrows = relationship('Borrow', back_populates='book')

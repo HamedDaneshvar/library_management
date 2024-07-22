@@ -15,3 +15,15 @@ class User(Base):
     sells = relationship('Sell', foreign_keys='Sell.user_id',
                          back_populates='user')
     payments = relationship('Payment', back_populates='user')
+    borrows_user = relationship('Borrow', foreign_keys='Borrow.user_id',
+                                back_populates='user')
+    borrows_superuser = relationship(
+        'Borrow',
+        foreign_keys='Borrow.superuser_id',
+        back_populates='superuser'
+    )
+    user_penalty = relationship(
+        'UserPenalty',
+        foreign_keys='UserPenalty.user_id',
+        back_populates='user'
+    )
