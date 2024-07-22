@@ -1,9 +1,7 @@
-from typing import List, Union
-from fastapi import APIRouter, Depends, HTTPException, Body
+from typing import List
+from fastapi import APIRouter, Depends, HTTPException
 from app.api import deps
-from sqlalchemy import and_
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import SQLAlchemyError
 from app.utils import APIResponseType, APIResponse
 from app import crud, models, schemas
 
@@ -33,3 +31,19 @@ async def get_books_for_sale(
     books = [schemas.Book.from_orm(book) for book in books]
 
     return APIResponse(books)
+
+
+@router.get('/revenue-summary')
+async def get_revenue_report_by_category(
+    db: AsyncSession = Depends(deps.get_db_async),
+    current_user: models.User = Depends(deps.get_current_user),
+) -> APIResponseType[List[schemas.RevenueSummary]]:
+    """
+    Revenue reporting service by category
+    """
+
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=401, detail="Unauthorized access")
+
+    summary = await crud.payment.get_sum_by_category(db)
+    return APIResponse(summary)

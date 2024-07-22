@@ -19,3 +19,8 @@ class PaymentCreate(Payment):
 
 class PaymentUpdate(Payment):
     pass
+
+
+class RevenueSummary(BaseModel):
+    category_id: int
+    total_price: float
