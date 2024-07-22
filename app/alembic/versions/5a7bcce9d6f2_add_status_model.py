@@ -21,6 +21,7 @@ def upgrade() -> None:
         'status',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('title', sa.String(), nullable=False),
+        sa.Column('is_deleted', sa.Boolean(), nullable=False, default=False),
         sa.Column('created', sa.DateTime(timezone=True), nullable=True),
         sa.Column('modified', sa.DateTime(timezone=True), nullable=True),
         sa.PrimaryKeyConstraint('id')

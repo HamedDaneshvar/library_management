@@ -27,6 +27,7 @@ async def get_all_status(
         db,
         skip=skip,
         limit=limit,
+        is_deleted=False,
     )
     return APIResponse(status)
 
@@ -45,7 +46,7 @@ async def get_status(
         raise HTTPException(status_code=401, detail="Unauthorized access")
 
     status = await crud.status.get(db, id=id)
-    if not status:
+    if not status or status.is_deleted:
         raise HTTPException(status_code=404, detail="Status not found")
 
     return APIResponse(status)
@@ -83,7 +84,7 @@ async def update_status(
 
     status_in = await crud.status.get(db, id=id)
 
-    if not status_in:
+    if not status_in or status_in.is_deleted:
         raise HTTPException(status_code=404, detail="Status not found")
 
     if request.title is not None:
@@ -108,7 +109,7 @@ async def delete_status(
 
     status_in = await crud.status.get(db, id=id)
 
-    if not status_in:
+    if not status_in or status_in.is_deleted:
         raise HTTPException(status_code=404, detail="Status not found")
 
     status = await crud.status.remove(db, id=id)

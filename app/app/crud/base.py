@@ -145,6 +145,30 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             setattr(db_obj, "modified", datetime.now())
 
         return self._commit_refresh(db, db_obj=db_obj)
+    
+    async def _delete_async(self, db: AsyncSession, *, id: int) -> ModelType:
+        db_obj = await self.get(db=db, id=id)
+        if db_obj is not None:
+            await db.delete(db_obj)
+            await db.commit()
+            return db_obj
+        return None
+
+    def delete(
+        self,
+        db: Session | AsyncSession,
+        *,
+        id: int
+    ) -> ModelType | Awaitable[ModelType]:
+        if isinstance(db, AsyncSession):
+            return self._remove_async(db=db, id=id)
+
+        db_obj = db.query(self.model).get(id)
+        if db_obj is not None:
+            db.delete(db_obj)
+            db.commit()
+            return db_obj
+        return None
 
     async def _filter_async(
             self,
