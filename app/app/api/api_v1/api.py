@@ -7,9 +7,11 @@ from app.api.api_v1.endpoints import (
     books,
     reports,
     sell,
+    borrows,
 )
 
 api_router = APIRouter()
+api_router.include_router(borrows.router, prefix="/borrow", tags=["borrows"])
 api_router.include_router(sell.router, prefix="/sell", tags=["sell"])
 api_router.include_router(reports.router, prefix="/reports", tags=["reports"])
 api_router.include_router(categories.router,
