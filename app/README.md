@@ -1,105 +1,33 @@
-## Install poetry
-create poetry
-```
-curl -sSL https://install.python-poetry.org | python3 -
-```
-If you are using bash, you need to add this line to your ~/.profile or ~/.bashrc file.  
-```
-export PATH="/home/kamran/.local/bin:$PATH"
-```
-```
-export PATH="/home/User/.local/bin:$PATH"
-```
-If you are using fish, you need to paste it in terminal
-```
-fish_add_path /home/kamran/.local/bin
-```
-## Project setup
+# Technical Task
 
-## Initialising a pre-existing project
-```
-cd /app
-```
-```
-poetry shell
-```
-```
-poetry install
-```
+## Project Overview
+This project is a library management system developed using FastAPI, Alembic, PostgreSQL, and other technologies. It provides functionality for managing library operations. The system supports two types of users: employees (library staff) and customers. Employees can handle tasks related to book lending and sales, while customers can request book loans.
 
-## Setup project without docker using Uvicorn
-you must create .env file in both app and app/app folders and filled it with .env-example and change it according to your system configuration
+Automatic book sales are implemented, and no expert approval is required. However, for book borrowing, a customer needs to submit a request, and upon verification by an employee, the book can be borrowed if the specified conditions mentioned in the technical task are met.
 
-you have to install and run postgres, redis and rabbitMQ server in your system and enter the ports and names and other credentials in the .env files for the project to run without problem.
+You can view the database schema design for this technical task by opening the file [Library_Management_db_schema.drawio](Library_Management_db_schema.drawio.html).
 
-if you want to run the project, after starting the named servers, migrate the project and use this command from the first "app" folder, it should look like this:
-```
-(app-py3.10) PS C:\some_folders\fastapi-postgres-boilerplate\app> uvicorn app.main:app --reload
-```
-## Migrate project
-create migration file with:
-```
-alembic revision --autogenerate
-```
-apply migration with:
-```commandline
-alembic upgrade head
-```
+To run the project, follow these steps:
+1. Copy the `.env-example` file and rename it to `.env`.
+2. Execute the following command to run the project on Docker:
+   ```
+   docker-compose up -d --build
+   ```
+3. Access the project via the link [http://localhost:8091/](http://localhost:8091/).
+4. To explore the API documentation, visit [http://localhost:8091/docs](http://localhost:8091/docs).
 
-## Create superuser
-Set user email and password in .env file:
+By default, fake data models are used for demonstration purposes.
+
+To log in as an employee, you can use the following credentials with the [login endpoint](http://localhost:8091/api/v1/users/token):
 
 ```
-FIRST_SUPERUSER=
-FIRST_SUPERUSER_PASSWORD=
+email: admin@gmail.com
+password: adminpassword
 ```
 
-Then run __initial_data.py__ file to create first superuser:
+To log in as a customer, you can use the following credentials with the [login endpoint](http://localhost:8091/api/v1/users/token):
 
-```bash
-python3 initial_data.py
-
-# or
-
-poetry run python3 initial_data.py
 ```
-
-### Test websocket
-in order to test websocket paste this line in api test-websocket
-```commandline
-ws://ip:port/api/v1/utils/echo-client/
-```
-and paste response in html file and open it
-
-
-## Install poetry
-create poetry
-```
-curl -sSL https://install.python-poetry.org | python3 -
-```
-If you are using bash, you need to add this line to your ~/.profile or ~/.bashrc file.  
-```
-export PATH="/home/kamran/.local/bin:$PATH"
-```
-```
-export PATH="/home/User/.local/bin:$PATH"
-```
-If you are using fish, you need to paste it in terminal
-```
-fish_add_path /home/kamran/.local/bin
-```
-
-
-#### First, let’s create our new project, let’s call it "app"
-```
-poetry new app
-```
-```
-pip3 install uvicorn gunicorn fastapi
-```
-```
-cd /app
-```
-```
-poetry add "package_name"
+email: user@gmail.com
+password: user
 ```
