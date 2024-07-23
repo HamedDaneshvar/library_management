@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
-from typing import List
-from sqlalchemy import func, desc, asc
+from typing import List, Optional
+from sqlalchemy import func, desc, asc, and_
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
+
 
 from app.crud.base import CRUDBase
 from app.models.borrow import Status, Borrow, BorrowActivityLog, UserPenalty
@@ -161,14 +163,52 @@ class CRUDBorrow(CRUDBase[Borrow, BorrowCreate, BorrowUpdate]):
 
         return await self.update(db, db_obj=borrow, obj_in=borrow)
 
-    async def get_borrowed_books_by_user(self, db: AsyncSession, user_id: int):
-        subquery = select(Borrow.book_id).where(
-            Borrow.user_id == user_id,
-            Borrow.status_id.in_([5, 6, 7])
-            # 5: Pending, 6: Borrowed, 7: Delivered
-        ).subquery()
+    async def get_borrowed_books_by_user(
+        self,
+        db: AsyncSession,
+        user_id: int,
+        book_name: Optional[str] = None,
+        category_name: Optional[str] = None,
+        borrow_count: Optional[int] = None,
+        borrow_qty: Optional[int] = None
+    ):
+        subquery = (
+            select(Borrow.book_id)
+            .where(
+                Borrow.user_id == user_id,
+                Borrow.status_id.in_([5, 6, 7])
+                # 5: Pending, 6: Borrowed, 7: Delivered
+            )
+            .subquery()
+        )
 
         query = select(Book).where(Book.id.in_(subquery))
+
+        if book_name:
+            query = query.where(Book.title.ilike(f"%{book_name}%"))
+
+        if category_name:
+            query = query.join(Book.category).where(Category.title.ilike(
+                f"%{category_name}%"))
+
+        if borrow_qty is not None:
+            query = query.where(Book.borrow_qty == borrow_qty)
+
+        if borrow_count is not None:
+            count_subquery = (
+                select(Borrow.book_id, func.count(Borrow.id).label("borrow_count"))
+                .where(
+                    Borrow.user_id == user_id
+                )
+                .group_by(Borrow.book_id)
+                .subquery()
+            )
+
+            query = query.join(count_subquery, Book.id == count_subquery.c.book_id)
+            query = query.where(count_subquery.c.borrow_count == borrow_count)
+
+
+        query = query.options(selectinload(Book.category))
 
         result = await db.execute(query)
         return result.scalars().all()

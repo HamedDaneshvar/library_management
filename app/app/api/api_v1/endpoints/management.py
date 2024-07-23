@@ -1,5 +1,5 @@
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query
 from app.api import deps
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.utils import APIResponseType, APIResponse
@@ -52,16 +52,31 @@ async def get_revenue_report_by_category(
 @router.get("/user/{user_id}/borrows")
 async def get_user_borrows(
     user_id: int,
+    book_name: Optional[str] =
+        Query(None, description="Filter by book name"),
+    category_name: Optional[str] =
+        Query(None, description="Filter by category name"),
+    borrow_count: Optional[int] =
+        Query(None, description="Filter by number of times borrowed"),
+    borrow_qty: Optional[int] =
+        Query(None, description="Filter by borrow quantity"),
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
-):
+) -> APIResponseType[List[schemas.Book]]:
     """
     View books borrowed by the user
     """
     if not current_user.is_superuser:
         raise HTTPException(status_code=401, detail="Unauthorized access")
 
-    books = await crud.borrow.get_borrowed_books_by_user(db, user_id)
+    books = await crud.borrow.get_borrowed_books_by_user(
+        db,
+        user_id,
+        book_name=book_name,
+        category_name=category_name,
+        borrow_count=borrow_count,
+        borrow_qty=borrow_qty
+    )
     return APIResponse(books)
 
 
