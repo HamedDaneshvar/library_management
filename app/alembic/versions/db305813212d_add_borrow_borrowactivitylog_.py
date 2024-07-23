@@ -62,6 +62,8 @@ def upgrade() -> None:
                                                          ondelete="CASCADE")),
         sa.Column('borrow_penalty_day', sa.Integer),
         sa.Column('is_deleted', sa.Boolean, default=False),
+        sa.Column('created', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('modified', sa.DateTime(timezone=True), nullable=True),
     )
 
 
