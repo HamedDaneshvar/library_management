@@ -16,14 +16,14 @@ async def get_categories(
     skip: int = 0,
     limit: int = 10,
     db: AsyncSession = Depends(deps.get_db_async),
-    current_user: models.User = Depends(deps.get_current_user),
+    # current_user: models.User = Depends(deps.get_current_user),
 ):
     """
     Retrieve categories.
     """
 
-    if not current_user.is_superuser:
-        raise HTTPException(status_code=401, detail="Unauthorized access")
+    # if not current_user.is_superuser:
+    #     raise HTTPException(status_code=401, detail="Unauthorized access")
 
     categories = await crud.category.filter(
         db,
@@ -38,14 +38,14 @@ async def get_categories(
 async def get_category(
     id: int,
     db: AsyncSession = Depends(deps.get_db_async),
-    current_user: models.User = Depends(deps.get_current_user),
+    # current_user: models.User = Depends(deps.get_current_user),
 ):
     """
     Retrieve a category.
     """
 
-    if not current_user.is_superuser:
-        raise HTTPException(status_code=401, detail="Unauthorized access")
+    # if not current_user.is_superuser:
+    #     raise HTTPException(status_code=401, detail="Unauthorized access")
 
     category = await crud.category.get(db, id=id)
     if not category or category.is_deleted:

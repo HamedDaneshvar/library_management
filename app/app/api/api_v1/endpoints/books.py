@@ -15,13 +15,13 @@ async def get_books(
     skip: int = 0,
     limit: int = 100,
     db: AsyncSession = Depends(deps.get_db_async),
-    current_user: models.User = Depends(deps.get_current_user),
+    # current_user: models.User = Depends(deps.get_current_user),
 ):
     """
     Retrieve books.
     """
-    if not current_user.is_superuser:
-        raise HTTPException(status_code=401, detail="Unauthorized access")
+    # if not current_user.is_superuser:
+    #     raise HTTPException(status_code=401, detail="Unauthorized access")
 
     books = await crud.book.filter(
         db,
@@ -36,13 +36,13 @@ async def get_books(
 async def get_book(
     id: int,
     db: AsyncSession = Depends(deps.get_db_async),
-    current_user: models.User = Depends(deps.get_current_user),
+    # current_user: models.User = Depends(deps.get_current_user),
 ):
     """
     Retrieve a book.
     """
-    if not current_user.is_superuser:
-        raise HTTPException(status_code=401, detail="Unauthorized access")
+    # if not current_user.is_superuser:
+    #     raise HTTPException(status_code=401, detail="Unauthorized access")
 
     book = await crud.book.get(db, id=id)
     if not book or book.is_deleted:

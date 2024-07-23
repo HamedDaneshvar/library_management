@@ -7,7 +7,7 @@ from app import crud, models, schemas
 
 
 router = APIRouter()
-namespace = "report"
+namespace = "management"
 
 
 @router.get('/books-for-sale')
@@ -47,3 +47,19 @@ async def get_revenue_report_by_category(
 
     summary = await crud.payment.get_sum_by_category(db)
     return APIResponse(summary)
+
+
+@router.get("/user/{user_id}/borrows")
+async def get_user_borrows(
+    user_id: int,
+    db: AsyncSession = Depends(deps.get_db_async),
+    current_user: models.User = Depends(deps.get_current_user),
+):
+    """
+    View books borrowed by the user
+    """
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=401, detail="Unauthorized access")
+
+    books = await crud.borrow.get_borrowed_books_by_user(db, user_id)
+    return APIResponse(books)

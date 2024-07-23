@@ -160,6 +160,18 @@ class CRUDBorrow(CRUDBase[Borrow, BorrowCreate, BorrowUpdate]):
 
         return await self.update(db, db_obj=borrow, obj_in=borrow)
 
+    async def get_borrowed_books_by_user(self, db: AsyncSession, user_id: int):
+        subquery = select(Borrow.book_id).where(
+            Borrow.user_id == user_id,
+            Borrow.status_id.in_([5, 6, 7])
+            # 5: Pending, 6: Borrowed, 7: Delivered
+        ).subquery()
+
+        query = select(Book).where(Book.id.in_(subquery))
+
+        result = await db.execute(query)
+        return result.scalars().all()
+
 
 class CRUDBorrowActivityLog(CRUDBase[BorrowActivityLog,
                                      BorrowActivityLogCreate,

@@ -5,7 +5,7 @@ from app.api.api_v1.endpoints import (
     utils,
     categories,
     books,
-    reports,
+    management,
     sell,
     borrows,
 )
@@ -18,7 +18,8 @@ api_router.include_router(borrows.user_borrow_router,
 api_router.include_router(borrows.staff_borrow_router,
                           prefix="/borrow",)
 api_router.include_router(sell.router, prefix="/sell", tags=["sell"])
-api_router.include_router(reports.router, prefix="/reports", tags=["reports"])
+api_router.include_router(management.router, prefix="/management",
+                          tags=["management"])
 api_router.include_router(categories.router,
                           prefix="/categories",
                           tags=["categories"])
