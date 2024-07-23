@@ -169,7 +169,7 @@ async def borrow_book_request(
     user_id = current_user.id
 
     # step 1: insert this request into borrow table and activity log
-    status_id = 1
+    status_id = 1  # Requested
     borrow_obj = schemas.BorrowCreate(
         book_id=book.id,
         user_id=user_id,
@@ -183,9 +183,25 @@ async def borrow_book_request(
 
     rejected_message = []
 
-    # step 2: if user has pending borrows is rejected
+    # step 2: maximum possible number of books from this category
     status_id = 2
-    has_pending = await crud.borrow.has_pending_borrows(db, current_user.id)
+    category_borrow_limit = await crud.borrow.check_category_borrow_limit(
+        db, user_id, book.category_id)
+    if category_borrow_limit:
+        # update borrow record
+        status_message = await crud.status.get(db, id=status_id)
+        borrow_update = schemas.BorrowUpdate(
+            status_id=status_id
+        )
+        borrow = await crud.borrow.update(db, db_obj=borrow,
+                                          obj_in=borrow_update)
+        # create new activity log record
+        await create_activity_log(db, borrow.id, status_id)
+        rejected_message.append(status_message.title)
+
+    # step 3: if user has pending borrows is rejected
+    status_id = 3
+    has_pending = await crud.borrow.has_pending_borrows(db, user_id)
     if has_pending:
         # update borrow record
         status_message = await crud.status.get(db, id=status_id)
@@ -198,9 +214,9 @@ async def borrow_book_request(
         await create_activity_log(db, borrow.id, status_id)
         rejected_message.append(status_message.title)
 
-    # step 3: Checking the balance of the user who has enough balance
+    # step 4: Checking the balance of the user who has enough balance
     # to borrow this book for 3 days
-    status_id = 3
+    status_id = 4
     category_id = book.category_id
     has_not_enough_balance = await crud.borrow.user_has_not_enough_balance(
                             db, user_id, category_id)
@@ -216,12 +232,12 @@ async def borrow_book_request(
         await create_activity_log(db, borrow.id, status_id)
         rejected_message.append(status_message.title)
 
-    # step 4: display to user why his/her is reject
+    # step 5: display to user why his/her is reject
     if has_pending or has_not_enough_balance:
         raise HTTPException(status_code=400, detail=rejected_message)
 
-    # step 5: Calculate the number of days the user can borrow the book
-    status_id = 4
+    # step 6: Calculate the number of days the user can borrow the book
+    status_id = 5  # pending
     borrow_days = await crud.borrow.get_borrow_days(
         db, book_id, book.borrow_qty, requested_days or 3)
 
@@ -235,7 +251,7 @@ async def borrow_book_request(
     # create new activity log record
     await create_activity_log(db, borrow.id, status_id)
 
-    # step 6: Reduce the number of books to borrow
+    # step 7: Reduce the number of books to borrow
     book_update = schemas.BookUpdate(
         borrow_qty=book.borrow_qty - 1
     )
@@ -267,11 +283,11 @@ async def lending_book(
         raise HTTPException(status_code=404, detail="Borrow record is \
                             not found")
 
-    pending_status_id = 4
+    pending_status_id = 5
     if borrow.status_id < pending_status_id:
         raise HTTPException(status_code=401, detail="Unauthorized access")
 
-    # step 6: lending book to user by staff
+    # step 1: lending book to user by staff
     status_id = 5  # Borrowed status
     borrow_update = schemas.BorrowUpdate(
         status_id=status_id,
@@ -304,13 +320,13 @@ async def delivered_book(
         raise HTTPException(status_code=404, detail="Borrow record is \
                             not found")
 
-    pending_status_id = 4
+    pending_status_id = 5
     if borrow.status_id < pending_status_id:
         raise HTTPException(status_code=401, detail="Unauthorized access")
 
-    # step 7: deliver book by user to staff
+    # step 1: deliver book by user to staff
     # calculate borrow_price and borrow penalty price and update borrow
-    status_id = 6  # Delivered status
+    status_id = 7  # Delivered status
     superuser_id = current_user.id
     borrow = crud.borrow.update_and_calculate_borrow(
         db, status_id,
@@ -334,7 +350,7 @@ async def delivered_book(
         user_penalty = await crud.user_penalty.create(
             db, obj_in=user_penalty_in)
 
-    # Increate the number of books to borrow
+    # Increase the number of books to borrow
     book = crud.book.get(id=borrow.book_id)
     book_update = schemas.BookUpdate(
         borrow_qty=book.borrow_qty + 1

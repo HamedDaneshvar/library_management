@@ -52,6 +52,31 @@ class CRUDBorrow(CRUDBase[Borrow, BorrowCreate, BorrowUpdate]):
             return self._has_pending_borrows_async(db, query)
         return db.scalar(query) > 0
 
+    async def check_category_borrow_limit(
+        self, db: AsyncSession, user_id: int, category_id: int
+    ) -> bool:
+        # Get the borrow limit for the category
+        category = await db.execute(
+            select(Category).where(Category.id == category_id)
+        )
+        category_obj = category.scalar_one()
+        borrow_limit = category_obj.borrow_limit
+
+        # Count the number of borrowed books in the category by the user
+        borrow_count = await db.execute(
+            select(func.count(Borrow.id))
+            .where(
+                Borrow.user_id == user_id,
+                Borrow.category_id == category_id,
+                Borrow.delivery_date.is_(None),
+                Borrow.status_id.in_([5, 6, 7])
+            )
+        )
+        borrow_count = borrow_count.scalar()
+
+        # Check if the borrow count exceeds the borrow limit
+        return borrow_count >= borrow_limit
+
     async def user_has_not_enough_balance(
             self,
             db: AsyncSession,
@@ -88,7 +113,7 @@ class CRUDBorrow(CRUDBase[Borrow, BorrowCreate, BorrowUpdate]):
             .select_from(Borrow)
             .where(  # status_id -> Borrowed, Delivered
                 Borrow.book_id == book_id,
-                Borrow.status_id.in_([4, 5]),
+                Borrow.status_id.in_([6, 7]),
                 Borrow.start_date >= thirty_days_ago
             )
         )
