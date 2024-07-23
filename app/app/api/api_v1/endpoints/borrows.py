@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from app.api import deps
@@ -149,9 +150,9 @@ async def create_activity_log(
 
 
 @user_borrow_router.get("/request")
-async def create_borrow_request(
+async def borrow_book_request(
     book_id: int,
-    borrow_days: Optional[int] = None,
+    requested_days: Optional[int] = None,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
 ):
@@ -164,11 +165,13 @@ async def create_borrow_request(
 
     book = await find_book(db, book_id)
 
+    user_id = current_user.id
+
     # step 1: insert this request into borrow table and activity log
     status_id = 1
     borrow_obj = schemas.BorrowCreate(
         book_id=book.id,
-        user_id=current_user.id,
+        user_id=user_id,
         status_id=1
     )
     # create borrow request
@@ -177,11 +180,14 @@ async def create_borrow_request(
 
     await check_book_for_borrow(book)
 
+    rejected_message = []
+
     # step 2: if user has pending borrows is rejected
     status_id = 2
     has_pending = await crud.borrow.has_pending_borrows(db, current_user.id)
     if has_pending:
         # update borrow record
+        status_message = await crud.status.get(db, id=status_id)
         borrow_update = schemas.BorrowUpdate(
             status_id=status_id
         )
@@ -189,16 +195,53 @@ async def create_borrow_request(
                                           obj_in=borrow_update)
         # create new activity log record
         await create_activity_log(db, borrow.id, status_id)
+        rejected_message.append(status_message.title)
 
     # step 3: Checking the balance of the user who has enough balance
     # to borrow this book for 3 days
+    status_id = 3
+    category_id = book.category_id
+    has_not_enough_balance = await crud.borrow.user_has_not_enough_balance(
+                            db, user_id, category_id)
+    if has_not_enough_balance:
+        # update borrow record
+        status_message = await crud.status.get(db, id=status_id)
+        borrow_update = schemas.BorrowUpdate(
+            status_id=status_id
+        )
+        borrow = await crud.borrow.update(db, db_obj=borrow,
+                                          obj_in=borrow_update)
+        # create new activity log record
+        await create_activity_log(db, borrow.id, status_id)
+        rejected_message.append(status_message.title)
 
-    return {"message": "user borrow request"}
+    # step 4: display to user why his/her is reject
+    if has_pending or has_not_enough_balance:
+        raise HTTPException(status_code=400, detail=rejected_message)
 
+    # step 5: Calculate the number of days the user can borrow the book
+    status_id = 4
+    borrow_days = await crud.borrow.get_borrow_days(
+        db, book_id, book.borrow_qty, requested_days or 3)
 
-@user_borrow_router.get("/test-query")
-async def test_borrow_request(
-    db: AsyncSession = Depends(deps.get_db_async),
-):
-    status = await crud.borrow.has_pending_borrows(db, user_id=2)
-    print(status)
+    borrow_update = schemas.BorrowUpdate(
+        status_id=status_id,
+        start_date=datetime.now(),
+        max_delivery_date=datetime.now() + timedelta(days=borrow_days)
+    )
+    borrow = await crud.borrow.update(db, db_obj=borrow,
+                                      obj_in=borrow_update)
+    # create new activity log record
+    await create_activity_log(db, borrow.id, status_id)
+
+    # step 6: Reduce the number of books to borrow
+    book_update = schemas.BookUpdate(
+        borrow_qty=book.borrow_qty - 1
+    )
+    book = await crud.book.update(db, db_obj=book,
+                                  obj_in=book_update)
+
+    return APIResponse({"message": "Your requested book has been reserved,\
+                         please pick up the desired book from the \
+                        library staff",
+                        "borrow_days": borrow_days})

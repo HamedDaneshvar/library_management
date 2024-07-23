@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -17,6 +17,7 @@ from app.schemas.borrow import (
     UserPenaltyCreate,
     UserPenaltyUpdate,
 )
+from app.models import Category, Book, User
 
 
 class CRUDStatus(CRUDBase[Status, StatusCreate, StatusUpdate]):
@@ -50,6 +51,57 @@ class CRUDBorrow(CRUDBase[Borrow, BorrowCreate, BorrowUpdate]):
         if isinstance(db, AsyncSession):
             return self._has_pending_borrows_async(db, query)
         return db.scalar(query) > 0
+
+    async def user_has_not_enough_balance(
+            self,
+            db: AsyncSession,
+            user_id: int,
+            category_id: int
+    ) -> bool:
+        # Query to get the borrow price per day from the book's category
+        query = (
+            select(Category.borrow_price_per_day, User.amount)
+            .join(User, User.id == user_id)
+            .where(Category.id == category_id)
+        )
+
+        result = await db.execute(query)
+        category_price_per_day, user_amount = result.first()
+
+        # Calculate the cost for 3 days
+        cost_for_three_days = category_price_per_day * 3
+
+        # Check if user has enough balance
+        return user_amount <= cost_for_three_days
+
+    async def get_borrow_days(
+            self,
+            db: AsyncSession,
+            book_id: int,
+            borrow_qty: int,
+            requested_days: int
+    ) -> int:
+        # Calculate f(30)
+        thirty_days_ago = datetime.now() - timedelta(days=30)
+        f_30_query = (
+            select(func.count())
+            .select_from(Borrow)
+            .where(  # status_id -> Borrowed, Delivered
+                Borrow.book_id == book_id,
+                Borrow.status_id.in_([4, 5]),
+                Borrow.start_date >= thirty_days_ago
+            )
+        )
+        f_30_result = await db.execute(f_30_query)
+        f_30 = f_30_result.scalar()
+
+        # Apply the formula
+        calculated_days = int((30 * borrow_qty) / (borrow_qty + f_30)) + 1
+
+        # Determine the number of days to return
+        if calculated_days < 3:
+            return 3
+        return min(requested_days, calculated_days)
 
 
 class CRUDBorrowActivityLog(CRUDBase[BorrowActivityLog,
