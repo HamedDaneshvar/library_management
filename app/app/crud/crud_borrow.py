@@ -103,6 +103,38 @@ class CRUDBorrow(CRUDBase[Borrow, BorrowCreate, BorrowUpdate]):
             return 3
         return min(requested_days, calculated_days)
 
+    async def update_and_calculate_borrow(
+        self, db: AsyncSession,
+        status_id: int,
+        superuser_id: int,
+        borrow: Borrow
+    ) -> Borrow:
+        # Fetch category details
+        category = await db.get(Category, borrow.category_id)
+
+        # Calculate borrow price
+        days_borrowed = (borrow.max_delivery_date - borrow.start_date).days
+        borrow_price = days_borrowed * category.borrow_price_per_day
+
+        # Calculate borrow penalty price
+        now = datetime.now()
+        days_penalty = (now - borrow.max_delivery_date).days \
+            if now > borrow.max_delivery_date else 0
+        borrow_penalty_price = days_penalty * category.borrow_price_per_day
+
+        # Calculate total price
+        total_price = borrow_price + borrow_penalty_price
+
+        # Update borrow object
+        borrow.delivery_date = now
+        borrow.status_id = status_id
+        borrow.superuser_id = superuser_id
+        borrow.borrow_price = borrow_price
+        borrow.borrow_penalty_price = borrow_penalty_price
+        borrow.total_price = total_price
+
+        return await self.update(db, db_obj=borrow, obj_in=borrow)
+
 
 class CRUDBorrowActivityLog(CRUDBase[BorrowActivityLog,
                                      BorrowActivityLogCreate,

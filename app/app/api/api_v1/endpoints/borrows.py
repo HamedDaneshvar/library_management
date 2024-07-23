@@ -9,6 +9,7 @@ from app import crud, models, schemas
 
 status_router = APIRouter(prefix="/status", tags=["borrow status"])
 user_borrow_router = APIRouter(prefix="/user", tags=["user borrow"])
+staff_borrow_router = APIRouter(prefix="/staff", tags=["staff borrow"])
 namespace = "borrow"
 
 
@@ -245,3 +246,120 @@ async def borrow_book_request(
                          please pick up the desired book from the \
                         library staff",
                         "borrow_days": borrow_days})
+
+
+@staff_borrow_router.put("/lending-book")
+async def lending_book(
+    borrow_id: int,
+    db: AsyncSession = Depends(deps.get_db_async),
+    current_user: models.User = Depends(deps.get_current_user)
+):
+    """
+    Lending book to user
+    """
+
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=401, detail="Unauthorized access")
+
+    borrow = crud.borrow.get(db, id=borrow_id)
+
+    if not borrow or borrow.is_deleted:
+        raise HTTPException(status_code=404, detail="Borrow record is \
+                            not found")
+
+    pending_status_id = 4
+    if borrow.status_id < pending_status_id:
+        raise HTTPException(status_code=401, detail="Unauthorized access")
+
+    # step 6: lending book to user by staff
+    status_id = 5  # Borrowed status
+    borrow_update = schemas.BorrowUpdate(
+        status_id=status_id,
+        superuser_id=current_user.id
+    )
+    borrow = await crud.borrow.update(db, db_obj=borrow,
+                                      obj_in=borrow_update)
+    # create new activity log record
+    await create_activity_log(db, borrow.id, status_id)
+
+    return APIResponse({"message": "Book was lent to the user"})
+
+
+@staff_borrow_router.put("/delivered-book")
+async def delivered_book(
+    borrow_id: int,
+    db: AsyncSession = Depends(deps.get_db_async),
+    current_user: models.User = Depends(deps.get_current_user)
+):
+    """
+    delivere book to staff
+    """
+
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=401, detail="Unauthorized access")
+
+    borrow = crud.borrow.get(db, id=borrow_id)
+
+    if not borrow or borrow.is_deleted:
+        raise HTTPException(status_code=404, detail="Borrow record is \
+                            not found")
+
+    pending_status_id = 4
+    if borrow.status_id < pending_status_id:
+        raise HTTPException(status_code=401, detail="Unauthorized access")
+
+    # step 7: deliver book by user to staff
+    # calculate borrow_price and borrow penalty price and update borrow
+    status_id = 6  # Delivered status
+    superuser_id = current_user.id
+    borrow = crud.borrow.update_and_calculate_borrow(
+        db, status_id,
+        superuser_id, borrow
+    )
+
+    # create new activity log record
+    await create_activity_log(db, borrow.id, status_id)
+
+    # add penalty of user into user penalty
+    now = datetime.now()
+    days_penalty = (now - borrow.max_delivery_date).days \
+        if now > borrow.max_delivery_date else 0
+
+    if days_penalty:
+        user_penalty_in = schemas.UserPenaltyCreate(
+            user_id=borrow.user_id,
+            borrow_id=borrow.id,
+            borrow_penalty_day=days_penalty
+        )
+        user_penalty = await crud.user_penalty.create(
+            db, obj_in=user_penalty_in)
+
+    # Increate the number of books to borrow
+    book = crud.book.get(id=borrow.book_id)
+    book_update = schemas.BookUpdate(
+        borrow_qty=book.borrow_qty + 1
+    )
+    book = await crud.book.update(db, db_obj=book,
+                                  obj_in=book_update)
+
+    # Reducing the cost of borrowing from the user's account
+    user = crud.user.get(id=borrow.user_id)
+    new_amount = user.amount - borrow.total_price
+    user_update = schemas.UpdateAmount(
+        user_id=borrow.user_id,
+        new_amount=new_amount
+    )
+    user = await crud.user.update(db, db_obj=user, obj_in=user_update)
+
+    # Insert the borrowing transaction in the payments model
+    payment_create = schemas.PaymentCreate(
+        book_id=borrow.book_id,
+        category_id=borrow.category_id,
+        user_id=borrow.user_id,
+        model_type=models.Borrow.__name__,
+        model_id=borrow.id,
+        price=borrow.total_price
+    )
+    payment = await crud.payment.create(db, obj_in=payment_create)
+
+    return APIResponse({"message": "Book was lent to the user"})
