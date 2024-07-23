@@ -63,3 +63,22 @@ async def get_user_borrows(
 
     books = await crud.borrow.get_borrowed_books_by_user(db, user_id)
     return APIResponse(books)
+
+
+@router.get("/penalties")
+async def get_user_penalties(
+    order_by: str = "desc",
+    db: AsyncSession = Depends(deps.get_db_async),
+    current_user: models.User = Depends(deps.get_current_user),
+) -> APIResponseType[List[schemas.UserPenaltySummary]]:
+    """
+    view get user penalties
+    """
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=401, detail="Unauthorized access")
+
+    if order_by.lower() not in ["desc", "asc"]:
+        raise HTTPException(status_code=400, detail="Invalid order_by value")
+
+    penalties = await crud.user_penalty.get_user_penalties(db, order_by)
+    return APIResponse(penalties)

@@ -62,3 +62,9 @@ class UserPenaltyCreate(UserPenalty):
 
 class UserPenaltyUpdate(UserPenalty):
     pass
+
+
+class UserPenaltySummary(BaseModel):
+    user_id: int
+    penalty_count: int
+    total_penalty_days: int

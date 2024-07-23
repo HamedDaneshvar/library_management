@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
-
-from sqlalchemy import func
+from typing import List
+from sqlalchemy import func, desc, asc
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -16,6 +16,7 @@ from app.schemas.borrow import (
     BorrowActivityLogUpdate,
     UserPenaltyCreate,
     UserPenaltyUpdate,
+    UserPenaltySummary,
 )
 from app.models import Category, Book, User
 
@@ -182,7 +183,33 @@ class CRUDBorrowActivityLog(CRUDBase[BorrowActivityLog,
 class CRUDUserPenalty(CRUDBase[UserPenalty,
                                UserPenaltyCreate,
                                UserPenaltyUpdate]):
-    pass
+    async def get_user_penalties(
+        self, db: AsyncSession, order_by: str = "desc"
+    ) -> List[UserPenaltySummary]:
+        order_func = desc if order_by == "desc" else asc
+
+        query = (
+            select(
+                UserPenalty.user_id,
+                func.count(UserPenalty.id).label("penalty_count"),
+                func.sum(UserPenalty.borrow_penalty_day)
+                .label("total_penalty_days"),
+            )
+            .group_by(UserPenalty.user_id)
+            .order_by(order_func("penalty_count"),
+                      order_func("total_penalty_days"))
+        )
+
+        result = await db.execute(query)
+        penalties = result.all()
+
+        return [
+            UserPenaltySummary(
+                user_id=row[0],
+                penalty_count=row[1],
+                total_penalty_days=row[2]
+            ) for row in penalties
+        ]
 
 
 status = CRUDStatus(Status)
