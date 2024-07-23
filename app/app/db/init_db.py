@@ -1,6 +1,10 @@
 import logging
+import random
+from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
 from app import models
 from app.core.config import settings
@@ -95,37 +99,114 @@ def create_initial_data(db: Session) -> None:
     db.commit()
 
     # Add a user for testing
-    user = models.User(full_name="Test User", email="testuser@example.com",
-                       hashed_password=get_password_hash("hashed_password"),
-                       amount=100.0)
-    db.add(user)
+    # Create 3 Users
+    users = [
+        models.User(full_name="Alice Johnson", email="alice@example.com",
+                    hashed_password=get_password_hash("hashedpassword1"),
+                    amount=100.0),
+        models.User(full_name="Bob Smith", email="bob@example.com",
+                    hashed_password=get_password_hash("hashedpassword2"),
+                    amount=150.0),
+        models.User(full_name="Charlie Brown", email="charlie@example.com",
+                    hashed_password=get_password_hash("hashedpassword3"),
+                    amount=200.0),
+        models.User(full_name="Test User", email="testuser@example.com",
+                    hashed_password=get_password_hash("hashed_password"),
+                    amount=100.0)
+    ]
+    db.add_all(users)
     db.commit()
+
+    # Create 7 Status
+    statuses = ["Requested",
+                "Rejected because you borrowed the maximum possible "
+                "number of books from this category",
+                "Rejected for not delivering the borrowed book",
+                "Rejected because your account balance is not enough "
+                "to borrow a book for 3 days",
+                "Pending",
+                "Borrowed",
+                "Delivered"]
+    for title in statuses:
+        status = models.Status(title=title)
+        db.add(status)
+
+    db.commit()
+
+    # Fetch user IDs and status IDs
+    user_ids = [user.id for user in
+                (db.execute(select(models.User))).scalars().all()]
+    status_ids = [status.id for status in
+                  (db.execute(select(models.Status))).scalars().all()]
 
     # Add initial sells
     sells = [
-        models.Sell(book_id=1, user_id=2, price=15.99),
-        models.Sell(book_id=3, user_id=2, price=20.00),
-        models.Sell(book_id=5, user_id=2, price=18.75),
-        models.Sell(book_id=7, user_id=2, price=30.99),
-        models.Sell(book_id=9, user_id=2, price=35.99),
+        models.Sell(book_id=1, user_id=random.choice(user_ids), price=15.99),
+        models.Sell(book_id=3, user_id=random.choice(user_ids), price=20.00),
+        models.Sell(book_id=5, user_id=random.choice(user_ids), price=18.75),
+        models.Sell(book_id=7, user_id=random.choice(user_ids), price=30.99),
+        models.Sell(book_id=9, user_id=random.choice(user_ids), price=35.99),
     ]
     db.add_all(sells)
     db.commit()
 
-    # Add initial payments
-    payments = [
-        models.Payment(book_id=1, category_id=1, user_id=2,
-                       model_type="Sell", model_id=1, price=15.99),
-        models.Payment(book_id=3, category_id=2, user_id=2,
-                       model_type="Sell", model_id=2, price=20.00),
-        models.Payment(book_id=5, category_id=3, user_id=2,
-                       model_type="Sell", model_id=3, price=18.75),
-        models.Payment(book_id=7, category_id=4, user_id=2,
-                       model_type="Sell", model_id=4, price=30.99),
-        models.Payment(book_id=9, category_id=5, user_id=2,
-                       model_type="Sell", model_id=5, price=35.99),
-    ]
-    db.add_all(payments)
+    # Create 15 Payments
+    model_type = [models.Sell.__name__, models.Borrow.__name__]
+    for i in range(15):
+        payment = models.Payment(
+            book_id=random.randint(1, 10),
+            category_id=random.randint(1, 5),
+            user_id=random.choice(user_ids),
+            model_type=random.choice(model_type),
+            model_id=random.randint(1, 30),
+            price=random.uniform(10, 100)
+        )
+        db.add(payment)
+
+    db.commit()
+
+    # Create 30 Borrows
+    for i in range(30):
+        start_date = datetime.now() - timedelta(days=random.randint(1, 30))
+        max_delivery_date = start_date + timedelta(days=14)
+        delivery_date = max_delivery_date + timedelta(
+            days=random.randint(0, 10)) if random.random() < 0.5 else None
+        borrow = models.Borrow(
+            book_id=random.randint(1, 20),
+            user_id=random.choice(user_ids),
+            status_id=random.choice(status_ids),
+            start_date=start_date,
+            max_delivery_date=max_delivery_date,
+            delivery_date=delivery_date,
+            borrow_price=random.uniform(5, 20),
+            borrow_penalty_price=random.uniform(0, 10) if delivery_date else 0,
+            total_price=random.uniform(10, 30)
+        )
+        db.add(borrow)
+
+    db.commit()
+
+    # Create 30 Borrow Activity Logs
+    borrow_ids = [borrow.id for borrow in
+                  (db.execute(select(models.Borrow))).scalars().all()]
+    for i in range(30):
+        activity_log = models.BorrowActivityLog(
+            borrow_id=random.choice(borrow_ids),
+            status_id=random.choice(status_ids)
+        )
+        db.add(activity_log)
+
+    db.commit()
+
+    # Create 15 User Penalties
+    for i in range(15):
+        user_penalty = models.UserPenalty(
+            user_id=random.choice(user_ids),
+            borrow_id=random.choice(borrow_ids),
+            borrow_penalty_day=random.randint(1, 10)
+        )
+        db.add(user_penalty)
+
     db.commit()
 
 
