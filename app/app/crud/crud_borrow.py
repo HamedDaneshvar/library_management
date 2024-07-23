@@ -1,3 +1,10 @@
+from datetime import datetime
+
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+
 from app.crud.base import CRUDBase
 from app.models.borrow import Status, Borrow, BorrowActivityLog, UserPenalty
 from app.schemas.borrow import (
@@ -17,7 +24,32 @@ class CRUDStatus(CRUDBase[Status, StatusCreate, StatusUpdate]):
 
 
 class CRUDBorrow(CRUDBase[Borrow, BorrowCreate, BorrowUpdate]):
-    pass
+    async def _has_pending_borrows_async(
+            self,
+            db: AsyncSession,
+            query
+    ) -> bool:
+        result = await db.scalar(query)
+        return result > 0
+
+    def has_pending_borrows(
+            self,
+            db: Session | AsyncSession,
+            user_id: int
+    ) -> bool:
+        query = (
+            select(func.count())
+            .select_from(self.model)
+            .where(
+                self.model.user_id == user_id,
+                self.model.max_delivery_date <= datetime.now(),
+                self.model.delivery_date == None
+            )
+        )
+
+        if isinstance(db, AsyncSession):
+            return self._has_pending_borrows_async(db, query)
+        return db.scalar(query) > 0
 
 
 class CRUDBorrowActivityLog(CRUDBase[BorrowActivityLog,

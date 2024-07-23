@@ -19,6 +19,7 @@ class Status(Base):
     is_deleted = Column(Boolean(), nullable=False, default=False)
 
     activity_logs = relationship("BorrowActivityLog", back_populates="status")
+    borrow = relationship("Borrow", back_populates="status")
 
 
 class Borrow(Base):
@@ -30,6 +31,7 @@ class Borrow(Base):
                           ForeignKey('user.id', ondelete="SET NULL"),
                           default=None, nullable=True)
     user_id = Column(Integer, ForeignKey('user.id', ondelete="CASCADE"))
+    status_id = Column(Integer, ForeignKey('status.id', ondelete="CASCADE"))
     start_date = Column(DateTime, default=None, nullable=True)
     max_delivery_date = Column(DateTime, default=None, nullable=True)
     delivery_date = Column(DateTime, default=None, nullable=True)
@@ -45,6 +47,8 @@ class Borrow(Base):
                         back_populates='borrows_user')
     penalties = relationship("UserPenalty", back_populates="borrow")
     activity_logs = relationship("BorrowActivityLog", back_populates="borrow")
+    status = relationship("Status", foreign_keys=[status_id],
+                          back_populates='borrow')
 
 
 class BorrowActivityLog(Base):

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel
 
 
@@ -16,22 +17,24 @@ class StatusUpdate(Status):
 
 class Borrow(BaseModel):
     book_id: int
-    superuser_id: int
+    superuser_id: Optional[int]
     user_id: int
-    start_date: datetime
-    max_delivery_date: datetime
-    delivery_date: datetime
-    borrow_price: float
-    borrow_penalty_price: float
-    total_price: float
+    status_id: int
+    start_date: Optional[datetime]
+    max_delivery_date: Optional[datetime]
+    delivery_date: Optional[datetime]
+    borrow_price: Optional[float]
+    borrow_penalty_price: Optional[float]
+    total_price: Optional[float]
 
 
 class BorrowCreate(Borrow):
     pass
 
 
-class Borrowupdate(Borrow):
-    pass
+class BorrowUpdate(Borrow):
+    book_id: Optional[int]
+    user_id: Optional[int]
 
 
 class BorrowActivityLog(BaseModel):

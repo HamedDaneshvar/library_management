@@ -28,6 +28,8 @@ def upgrade() -> None:
                   nullable=True),
         sa.Column('user_id', sa.Integer,
                   sa.ForeignKey('user.id', ondelete="CASCADE")),
+        sa.Column('status_id', sa.Integer,
+                  sa.ForeignKey('status.id', ondelete="CASCADE")),
         sa.Column('start_date', sa.DateTime, nullable=True),
         sa.Column('max_delivery_date', sa.DateTime, nullable=True),
         sa.Column('delivery_date', sa.DateTime, nullable=True),

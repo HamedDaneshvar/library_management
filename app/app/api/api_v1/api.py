@@ -11,7 +11,10 @@ from app.api.api_v1.endpoints import (
 )
 
 api_router = APIRouter()
-api_router.include_router(borrows.router, prefix="/borrow", tags=["borrows"])
+api_router.include_router(borrows.status_router,
+                          prefix="/borrow",)
+api_router.include_router(borrows.user_borrow_router,
+                          prefix="/borrow",)
 api_router.include_router(sell.router, prefix="/sell", tags=["sell"])
 api_router.include_router(reports.router, prefix="/reports", tags=["reports"])
 api_router.include_router(categories.router,
