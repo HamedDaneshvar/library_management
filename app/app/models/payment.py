@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Boolean, Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
@@ -13,6 +13,7 @@ class Payment(Base):
     model_type = Column(String, nullable=False)
     model_id = Column(Integer, nullable=False)
     price = Column(Float, nullable=False)
+    is_deleted = Column(Boolean(), nullable=False, default=False)
 
     book = relationship("Book", back_populates="payments")
     category = relationship("Category", foreign_keys=[category_id])

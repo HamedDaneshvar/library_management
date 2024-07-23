@@ -11,6 +11,7 @@ class User(Base):
     is_active = Column(Boolean(), default=True)
     is_superuser = Column(Boolean(), default=False)
     amount = Column(Float, nullable=False, default=0.0)
+    is_deleted = Column(Boolean(), nullable=False, default=False)
 
     sells = relationship('Sell', foreign_keys='Sell.user_id',
                          back_populates='user')
