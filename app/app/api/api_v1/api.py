@@ -15,8 +15,6 @@ api_router.include_router(borrows.status_router,
                           prefix="/borrow",)
 api_router.include_router(borrows.user_borrow_router,
                           prefix="/borrow",)
-api_router.include_router(borrows.staff_borrow_router,
-                          prefix="/borrow",)
 api_router.include_router(sell.router, prefix="/sell", tags=["sell"])
 api_router.include_router(management.router, prefix="/management",
                           tags=["management"])
