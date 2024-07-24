@@ -213,6 +213,23 @@ class CRUDBorrow(CRUDBase[Borrow, BorrowCreate, BorrowUpdate]):
         result = await db.execute(query)
         return result.scalars().all()
 
+    def get_active_borrows_by_user(
+        self, db: Session, user_id: int
+    ) -> List[Borrow]:
+        """
+        get list of borrow
+        """
+        query = (
+            select(Borrow)
+            .where(
+                Borrow.user_id == user_id,
+                Borrow.status_id.in_([5, 6, 7]),
+                Borrow.delivery_date.is_(None)
+            )
+        )
+        result = db.execute(query)
+        return result.scalars().all()
+
 
 class CRUDBorrowActivityLog(CRUDBase[BorrowActivityLog,
                                      BorrowActivityLogCreate,

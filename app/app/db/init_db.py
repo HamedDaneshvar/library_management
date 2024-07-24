@@ -184,6 +184,24 @@ def create_initial_data(db: Session) -> None:
         )
         db.add(borrow)
 
+    # Create 10 Borrows for test celery task
+    for i in range(10):
+        start_date = datetime.now() - timedelta(days=random.randint(1, 30))
+        max_delivery_date = start_date + timedelta(days=14)
+        delivery_date = None
+        borrow = models.Borrow(
+            book_id=random.randint(1, 20),
+            user_id=random.choice(user_ids),
+            status_id=random.choice([5, 6, 7]),
+            start_date=start_date,
+            max_delivery_date=max_delivery_date,
+            delivery_date=delivery_date,
+            borrow_price=random.uniform(5, 20),
+            borrow_penalty_price=random.uniform(0, 10) if delivery_date else 0,
+            total_price=random.uniform(10, 30)
+        )
+        db.add(borrow)
+
     db.commit()
 
     # Create 30 Borrow Activity Logs
