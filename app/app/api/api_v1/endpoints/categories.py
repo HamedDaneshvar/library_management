@@ -17,7 +17,7 @@ async def get_categories(
     limit: int = 10,
     db: AsyncSession = Depends(deps.get_db_async),
     # current_user: models.User = Depends(deps.get_current_user),
-):
+) -> APIResponseType[List[schemas.CategoryOut]]:
     """
     Retrieve categories.
     """
@@ -31,6 +31,10 @@ async def get_categories(
         limit=limit,
         is_deleted=False
     )
+    categories = [schemas.CategoryOut(
+        title=cat.title,
+        borrow_limit=cat.borrow_limit,
+        borrow_price_per_day=cat.borrow_price_per_day) for cat in categories]
     return APIResponse(categories)
 
 
@@ -39,7 +43,7 @@ async def get_category(
     id: int,
     db: AsyncSession = Depends(deps.get_db_async),
     # current_user: models.User = Depends(deps.get_current_user),
-):
+) -> APIResponseType[schemas.CategoryOut]:
     """
     Retrieve a category.
     """
@@ -51,6 +55,12 @@ async def get_category(
     if not category or category.is_deleted:
         raise HTTPException(status_code=404, detail="Category not found")
 
+    category = schemas.CategoryOut(
+        title=category.title,
+        borrow_limit=category.borrow_limit,
+        borrow_price_per_day=category.borrow_price_per_day
+    )
+
     return APIResponse(category)
 
 
@@ -59,7 +69,7 @@ async def create_category(
     category_in: schemas.CategoryCreate,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
-):
+) -> APIResponseType[schemas.CategoryOut]:
     """
     Create a new category
     """
@@ -67,6 +77,11 @@ async def create_category(
         raise HTTPException(status_code=401, detail="Unauthorized access")
 
     category = await crud.category.create(db, obj_in=category_in)
+    category = schemas.CategoryOut(
+        title=category.title,
+        borrow_limit=category.borrow_limit,
+        borrow_price_per_day=category.borrow_price_per_day
+    )
     return APIResponse(category)
 
 
@@ -76,7 +91,7 @@ async def update_category(
     request: schemas.CategoryUpdate,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
-):
+) -> APIResponseType[schemas.CategoryOut]:
     """
     update a category
     """
@@ -100,6 +115,11 @@ async def update_category(
         db,
         db_obj=category_in,
     )
+    category = schemas.CategoryOut(
+        title=category.title,
+        borrow_limit=category.borrow_limit,
+        borrow_price_per_day=category.borrow_price_per_day
+    )
     return APIResponse(category)
 
 
@@ -108,7 +128,7 @@ async def delete_category(
     id: int,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
-):
+) -> APIResponse[schemas.CategoryDelete]:
     """
     delete a category
     """
@@ -121,5 +141,6 @@ async def delete_category(
     if not category_in or category_in.is_deleted:
         raise HTTPException(status_code=404, detail="Category not found")
 
-    category = await crud.category.remove(db, id=id)
-    return APIResponse(category)
+    await crud.category.remove(db, id=id)
+    item = schemas.CategoryDelete()
+    return APIResponse(item)
