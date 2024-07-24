@@ -35,7 +35,7 @@ async def get_all_status(
     return APIResponse(status)
 
 
-@status_router.get("/{id}")
+@status_router.get("/{id}/")
 async def get_status(
     id: int,
     db: AsyncSession = Depends(deps.get_db_async),
@@ -71,7 +71,7 @@ async def create_status(
     return APIResponse(status)
 
 
-@status_router.put("/{id}")
+@status_router.put("/{id}/")
 async def update_status(
     id: int,
     request: schemas.StatusUpdate,
@@ -97,7 +97,7 @@ async def update_status(
     return APIResponse(status)
 
 
-@status_router.delete("/{id}")
+@status_router.delete("/{id}/")
 async def delete_status(
     id: int,
     db: AsyncSession = Depends(deps.get_db_async),
@@ -149,7 +149,7 @@ async def create_activity_log(
     )
 
 
-@user_borrow_router.get("/request")
+@user_borrow_router.get("/request/")
 async def borrow_book_request(
     book_id: int,
     requested_days: Optional[int] = None,

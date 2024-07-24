@@ -12,7 +12,7 @@ router = APIRouter()
 namespace = "management"
 
 
-@router.get('/books-for-sale')
+@router.get('/books-for-sale/')
 async def get_books_for_sale(
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
@@ -35,7 +35,7 @@ async def get_books_for_sale(
     return APIResponse(books)
 
 
-@router.get('/revenue-summary')
+@router.get('/revenue-summary/')
 async def get_revenue_report_by_category(
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
@@ -51,7 +51,7 @@ async def get_revenue_report_by_category(
     return APIResponse(summary)
 
 
-@router.get("/user/{user_id}/borrows")
+@router.get("/user/{user_id}/borrows/")
 async def get_user_borrows(
     user_id: int,
     book_name: Optional[str] =
@@ -82,7 +82,7 @@ async def get_user_borrows(
     return APIResponse(books)
 
 
-@router.get("/penalties")
+@router.get("/penalties/")
 async def get_user_penalties(
     order_by: str = "desc",
     db: AsyncSession = Depends(deps.get_db_async),
@@ -101,7 +101,7 @@ async def get_user_penalties(
     return APIResponse(penalties)
 
 
-@router.put("/lending-book")
+@router.put("/lending-book/")
 async def lending_book(
     borrow_id: int,
     db: AsyncSession = Depends(deps.get_db_async),
@@ -138,7 +138,7 @@ async def lending_book(
     return APIResponse({"message": "Book was lent to the user"})
 
 
-@router.put("/delivered-book")
+@router.put("/delivered-book/")
 async def delivered_book(
     borrow_id: int,
     db: AsyncSession = Depends(deps.get_db_async),

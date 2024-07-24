@@ -32,7 +32,7 @@ async def get_books(
     return APIResponse(books)
 
 
-@router.get("/{id}")
+@router.get("/{id}/")
 async def get_book(
     id: int,
     db: AsyncSession = Depends(deps.get_db_async),
@@ -73,7 +73,7 @@ async def create_book(
     return APIResponse(book)
 
 
-@router.put("/{id}")
+@router.put("/{id}/")
 async def update_book(
     id: int,
     request: schemas.BookUpdate,
@@ -110,7 +110,7 @@ async def update_book(
     return APIResponse(book)
 
 
-@router.delete("/{id}")
+@router.delete("/{id}/")
 async def delete_book(
     id: int,
     db: AsyncSession = Depends(deps.get_db_async),

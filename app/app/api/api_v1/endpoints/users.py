@@ -28,7 +28,7 @@ router = APIRouter()
 namespace = "user"
 
 
-@router.post("/token")
+@router.post("/token/")
 async def login(
     login_user_in: schemas.LoginUser,
     db: Session = Depends(deps.get_db_async),
@@ -57,7 +57,7 @@ async def login(
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 
-@router.post("/refresh-token")
+@router.post("/refresh-token/")
 async def refresh_token(
     token: schemas.RefreshToken
 ) -> Any:
@@ -97,7 +97,7 @@ async def refresh_token(
         )
 
 
-@router.post("/me")
+@router.post("/me/")
 async def me(
     current_user: models.User = Depends(deps.get_current_user),
 ) -> APIResponseType[schemas.User]:
@@ -107,7 +107,7 @@ async def me(
     return APIResponse(current_user)
 
 
-@router.put("/charge")
+@router.put("/charge/")
 async def charge_account(
     request: schemas.UpdateAmount,
     db: AsyncSession = Depends(deps.get_db_async),
@@ -213,7 +213,7 @@ async def create_user(
     return APIResponse(user)
 
 
-@router.put("/update/me")
+@router.put("/update/me/")
 @invalidate(namespace=namespace)
 async def update_user_me(
     *,
@@ -238,7 +238,7 @@ async def update_user_me(
     return APIResponse(user)
 
 
-@router.get("/{user_id}")
+@router.get("/{user_id}/")
 @cache(namespace=namespace, expire=ONE_DAY_IN_SECONDS)
 async def read_user_by_id(
     user_id: int,
@@ -266,7 +266,7 @@ async def read_user_by_id(
     return APIResponse(user)
 
 
-@router.put("/{user_id}")
+@router.put("/{user_id}/")
 async def update_user(
     *,
     db: AsyncSession = Depends(deps.get_db_async),

@@ -34,7 +34,7 @@ async def get_categories(
     return APIResponse(categories)
 
 
-@router.get("/{id}")
+@router.get("/{id}/")
 async def get_category(
     id: int,
     db: AsyncSession = Depends(deps.get_db_async),
@@ -70,7 +70,7 @@ async def create_category(
     return APIResponse(category)
 
 
-@router.put("/{id}")
+@router.put("/{id}/")
 async def update_category(
     id: int,
     request: schemas.CategoryUpdate,
@@ -103,7 +103,7 @@ async def update_category(
     return APIResponse(category)
 
 
-@router.delete("/{id}")
+@router.delete("/{id}/")
 async def delete_category(
     id: int,
     db: AsyncSession = Depends(deps.get_db_async),

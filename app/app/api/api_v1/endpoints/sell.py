@@ -65,7 +65,7 @@ async def process_sale(
     return sell, total_price
 
 
-@router.get('/book/{book_id}')
+@router.get('/book/{book_id}/')
 async def sell_book(
     book_id: int,
     qty: int = 1,
