@@ -28,6 +28,8 @@ password: adminpassword
 To log in as a customer, you can use the following credentials with the [login endpoint](http://localhost:8091/api/v1/users/token):
 
 ```
-email: user@gmail.com
-password: user
+email: testuser@example.com
+password: password
 ```
+
+<div style="text-align:center"><h3><a href="./route_desc.md">Description of routes and services</a></h3></div>

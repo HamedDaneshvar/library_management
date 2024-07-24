@@ -112,7 +112,7 @@ def create_initial_data(db: Session) -> None:
                     hashed_password=get_password_hash("hashedpassword3"),
                     amount=Decimal('200.0')),
         models.User(full_name="Test User", email="testuser@example.com",
-                    hashed_password=get_password_hash("hashed_password"),
+                    hashed_password=get_password_hash("password"),
                     amount=Decimal('100.0'))
     ]
     db.add_all(users)
