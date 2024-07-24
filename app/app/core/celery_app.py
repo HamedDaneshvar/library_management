@@ -16,7 +16,7 @@ celery_app.conf.update(
     beat_schedule={
         "deduct_book_cost-for-daily": {
             "task": "app.celery.tasks.deduct_book_cost",
-            "schedule": crontab(day="*/1")
+            "schedule": crontab(hour="*/24")
 
         }
     },

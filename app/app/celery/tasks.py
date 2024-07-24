@@ -1,6 +1,6 @@
 from celery import Celery
 from app.core.celery_app import celery_app
-from app import crud
+from app import crud, schemas, models
 from app.api import deps
 
 
@@ -25,6 +25,21 @@ def deduct_book_cost():
                     cost = category.borrow_price_per_day
                     # Deduct cost from user's amount
                     user.amount -= cost
+
+                    # Insert the borrowing transaction in the payments model
+                    payment_create = schemas.PaymentCreate(
+                        book_id=borrow.book_id,
+                        category_id=category.id,
+                        user_id=borrow.user_id,
+                        model_type=models.Borrow.__name__,
+                        model_id=borrow.id,
+                        price=cost
+                    )
+                    payment = crud.payment.create(
+                        db,
+                        obj_in=payment_create
+                    )
+
                     # Commit the changes
                     db.commit()
             print("Book costs deducted successfully.")

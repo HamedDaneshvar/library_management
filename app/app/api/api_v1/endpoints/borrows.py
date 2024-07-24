@@ -358,15 +358,4 @@ async def delivered_book(
     book = await crud.book.update(db, db_obj=book,
                                   obj_in=book_update)
 
-    # Insert the borrowing transaction in the payments model
-    payment_create = schemas.PaymentCreate(
-        book_id=borrow.book_id,
-        category_id=borrow.category_id,
-        user_id=borrow.user_id,
-        model_type=models.Borrow.__name__,
-        model_id=borrow.id,
-        price=borrow.total_price
-    )
-    payment = await crud.payment.create(db, obj_in=payment_create)
-
-    return APIResponse({"message": "Book was lent to the user"})
+    return APIResponse({"message": "Book was delivered by the user"})
