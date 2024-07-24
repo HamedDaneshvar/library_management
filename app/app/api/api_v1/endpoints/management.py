@@ -106,7 +106,7 @@ async def lending_book(
     borrow_id: int,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user)
-):
+) -> APIResponseType[schemas.LendingBook]:
     """
     Lending book to user
     """
@@ -135,7 +135,16 @@ async def lending_book(
     # create new activity log record
     await create_activity_log(db, borrow.id, status_id)
 
-    return APIResponse({"message": "Book was lent to the user"})
+    borrow = schemas.LendingBook(
+        book_id=borrow.book_id,
+        superuser_id=borrow.superuser_id,
+        user_id=borrow.user_id,
+        status_id=borrow.status_id,
+        start_date=borrow.start_date,
+        max_delivery_date=borrow.max_delivery_date,
+    )
+
+    return APIResponse(borrow)
 
 
 @router.put("/delivered-book/")
@@ -143,7 +152,7 @@ async def delivered_book(
     borrow_id: int,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user)
-):
+) -> APIResponseType[schemas.DeliveredBook]:
     """
     delivere book to staff
     """
@@ -195,4 +204,16 @@ async def delivered_book(
     book = await crud.book.update(db, db_obj=book,
                                   obj_in=book_update)
 
-    return APIResponse({"message": "Book was delivered by the user"})
+    borrow = schemas.DeliveredBook(
+        book_id=borrow.book_id,
+        user_id=borrow.user_id,
+        status_id=borrow.status_id,
+        start_date=borrow.start_date,
+        max_delivery_date=borrow.max_delivery_date,
+        delivery_date=borrow.delivery_date,
+        borrow_price=borrow.borrow_price,
+        borrow_penalty_price=borrow.borrow_penalty_price,
+        total_price=borrow.total_price
+    )
+
+    return APIResponse(borrow)

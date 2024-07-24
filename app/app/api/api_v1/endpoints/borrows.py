@@ -18,7 +18,7 @@ async def get_all_status(
     limit: int = 10,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
-):
+) -> APIResponseType[list[schemas.Status]]:
     """
     Retrieve all status.
     """
@@ -32,6 +32,7 @@ async def get_all_status(
         limit=limit,
         is_deleted=False,
     )
+    status = [schemas.Status(title=st.title) for st in status]
     return APIResponse(status)
 
 
@@ -40,7 +41,7 @@ async def get_status(
     id: int,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
-):
+) -> APIResponseType[schemas.Status]:
     """
     Retrieve a status.
     """
@@ -52,6 +53,8 @@ async def get_status(
     if not status or status.is_deleted:
         raise HTTPException(status_code=404, detail="Status not found")
 
+    status = schemas.Status(title=status.title)
+
     return APIResponse(status)
 
 
@@ -60,7 +63,7 @@ async def create_status(
     status_in: schemas.StatusCreate,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
-):
+) -> APIResponseType[schemas.Status]:
     """
     Create a new status
     """
@@ -68,6 +71,7 @@ async def create_status(
         raise HTTPException(status_code=401, detail="Unauthorized access")
 
     status = await crud.status.create(db, obj_in=status_in)
+    status = schemas.Status(title=status.title)
     return APIResponse(status)
 
 
@@ -77,7 +81,7 @@ async def update_status(
     request: schemas.StatusUpdate,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
-):
+) -> APIResponseType[schemas.Status]:
     """
     update a status
     """
@@ -94,6 +98,7 @@ async def update_status(
         status_in.title = request.title
 
     status = await crud.status.update(db, db_obj=status_in)
+    status = schemas.Status(title=status.title)
     return APIResponse(status)
 
 
@@ -102,7 +107,7 @@ async def delete_status(
     id: int,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
-):
+) -> APIResponseType[schemas.StatusDelete]:
     """
     delete a status
     """
@@ -117,7 +122,9 @@ async def delete_status(
 
     status = await crud.status.remove(db, id=id)
 
-    return APIResponse(status)
+    item = schemas.StatusDelete()
+
+    return APIResponse(item)
 
 
 async def find_book(db: AsyncSession, book_id: int) -> models.Book:
@@ -155,7 +162,7 @@ async def borrow_book_request(
     requested_days: Optional[int] = None,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
-):
+) -> APIResponseType[schemas.BorrowBookRequest]:
     """
     Request to borrow a book
     """
@@ -232,7 +239,7 @@ async def borrow_book_request(
         rejected_message.append(status_message.title)
 
     # step 5: display to user why his/her is reject
-    if has_pending or has_not_enough_balance:
+    if has_pending or has_not_enough_balance or category_borrow_limit:
         raise HTTPException(status_code=400, detail=rejected_message)
 
     # step 6: Calculate the number of days the user can borrow the book
@@ -257,7 +264,12 @@ async def borrow_book_request(
     book = await crud.book.update(db, db_obj=book,
                                   obj_in=book_update)
 
-    return APIResponse({"message": "Your requested book has been reserved,\
-                         please pick up the desired book from the \
-                        library staff",
-                        "borrow_days": borrow_days})
+    borrow = schemas.BorrowBookRequest(
+        book_id=borrow.book_id,
+        status_id=borrow.status_id,
+        start_date=borrow.start_date,
+        max_delivery_date=borrow.max_delivery_date,
+        borrow_days=borrow_days,
+    )
+
+    return APIResponse(borrow)

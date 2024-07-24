@@ -15,6 +15,10 @@ class StatusUpdate(Status):
     pass
 
 
+class StatusDelete(BaseModel):
+    message: str = "Item deleted successfully"
+
+
 class Borrow(BaseModel):
     book_id: int
     superuser_id: Optional[int]
@@ -36,6 +40,28 @@ class BorrowCreate(Borrow):
 class BorrowUpdate(Borrow):
     book_id: Optional[int]
     user_id: Optional[int]
+
+
+class BorrowBookRequest(BaseModel):
+    book_id: int
+    status_id: int
+    start_date: datetime
+    max_delivery_date: datetime
+    message: str = "Your requested book has been reserved, "
+    "please pick up the desired book from the library staff"
+    borrow_days: int
+
+
+class LendingBook(BaseModel):
+    book_id: int
+    user_id: int
+    status_id: int
+    start_date: datetime
+    max_delivery_date: datetime
+
+
+class DeliveredBook(Borrow):
+    pass
 
 
 class BorrowActivityLog(BaseModel):
