@@ -10,13 +10,33 @@ router = APIRouter()
 namespace = "book"
 
 
+def map_books_to_schema(
+    user: models.User,
+    books: List[models.Book]
+) -> Union[List[schemas.BookOutSuperuser] | List[schemas.BookOutUser]]:
+    if user.is_superuser:
+        return [schemas.BookOutSuperuser(
+            title=book.title,
+            category_id=book.category_id,
+            borrow_qty=book.borrow_qty,
+            sell_qty=book.sell_qty,
+            sell_price=book.sell_price)
+            for book in books]
+    else:
+        return [schemas.BookOutUser(
+                title=book.title,
+                category_id=book.category_id)
+                for book in books]
+
+
 @router.get("/")
 async def get_books(
     skip: int = 0,
     limit: int = 100,
     db: AsyncSession = Depends(deps.get_db_async),
-    # current_user: models.User = Depends(deps.get_current_user),
-):
+    current_user: models.User = Depends(deps.get_current_user),
+) -> APIResponseType[Union[List[schemas.BookOutSuperuser] |
+                           List[schemas.BookOutUser]]]:
     """
     Retrieve books.
     """
@@ -29,6 +49,7 @@ async def get_books(
         limit=limit,
         is_deleted=False
     )
+    books = map_books_to_schema(current_user, books)
     return APIResponse(books)
 
 
@@ -36,8 +57,9 @@ async def get_books(
 async def get_book(
     id: int,
     db: AsyncSession = Depends(deps.get_db_async),
-    # current_user: models.User = Depends(deps.get_current_user),
-):
+    current_user: models.User = Depends(deps.get_current_user),
+) -> APIResponseType[Union[schemas.BookOutSuperuser |
+                           schemas.BookOutUser]]:
     """
     Retrieve a book.
     """
@@ -48,6 +70,7 @@ async def get_book(
     if not book or book.is_deleted:
         raise HTTPException(status_code=404, detail="Book not found")
 
+    book = map_books_to_schema(current_user, [book])[0]
     return APIResponse(book)
 
 
@@ -56,7 +79,7 @@ async def create_book(
     book_in: schemas.BookCreate,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
-):
+) -> APIResponseType[schemas.BookOutSuperuser]:
     """
     Create a new book
     """
@@ -70,6 +93,7 @@ async def create_book(
         raise HTTPException(status_code=422, detail=f"Category with {category_id} id does not exist")
 
     book = await crud.book.create(db, obj_in=book_in)
+    book = map_books_to_schema(current_user, [book])[0]
     return APIResponse(book)
 
 
@@ -79,7 +103,7 @@ async def update_book(
     request: schemas.BookUpdate,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
-):
+) -> APIResponseType[schemas.BookOutSuperuser]:
     """
     update a book
     """
@@ -107,6 +131,7 @@ async def update_book(
         db,
         db_obj=book_in,
     )
+    book = map_books_to_schema(current_user, [book])[0]
     return APIResponse(book)
 
 
@@ -129,4 +154,5 @@ async def delete_book(
         raise HTTPException(status_code=404, detail="Book not found")
 
     book = await crud.book.remove(db, id=id)
-    return APIResponse(book)
+    item = schemas.BookDelete()
+    return APIResponse(item)
