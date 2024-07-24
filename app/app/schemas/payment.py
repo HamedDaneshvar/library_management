@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, condecimal
 
 
 class Payment(BaseModel):
@@ -7,7 +7,7 @@ class Payment(BaseModel):
     user_id: int
     model_type: str
     model_id: int
-    price: float
+    price: condecimal(max_digits=10, decimal_places=2)
 
     class Config:
         orm_mode = True
@@ -23,4 +23,4 @@ class PaymentUpdate(Payment):
 
 class RevenueSummary(BaseModel):
     category_id: int
-    total_price: float
+    total_price: condecimal(max_digits=10, decimal_places=2)

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, condecimal
 
 
 # Shared properties
@@ -9,7 +9,7 @@ class UserBase(BaseModel):
     full_name: str | None = None
     is_active: bool | None = True
     is_superuser: bool = False
-    amount: float
+    amount: condecimal(max_digits=10, decimal_places=2)
 
 
 # Properties to receive via API on creation
@@ -47,4 +47,4 @@ class LoginUser(BaseModel):
 
 class UpdateAmount(BaseModel):
     user_id: int
-    new_amount: float
+    new_amount: condecimal(max_digits=10, decimal_places=2)

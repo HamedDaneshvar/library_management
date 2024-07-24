@@ -2,7 +2,7 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
-    Float,
+    Numeric,
     Integer,
     String,
     ForeignKey,
@@ -35,9 +35,9 @@ class Borrow(Base):
     start_date = Column(DateTime, default=None, nullable=True)
     max_delivery_date = Column(DateTime, default=None, nullable=True)
     delivery_date = Column(DateTime, default=None, nullable=True)
-    borrow_price = Column(Float, nullable=True)
-    borrow_penalty_price = Column(Float, nullable=True)
-    total_price = Column(Float, nullable=True)
+    borrow_price = Column(Numeric(10, 2), nullable=True)
+    borrow_penalty_price = Column(Numeric(10, 2), nullable=True)
+    total_price = Column(Numeric(10, 2), nullable=True)
     is_deleted = Column(Boolean(), default=False)
 
     book = relationship("Book", back_populates="borrows")

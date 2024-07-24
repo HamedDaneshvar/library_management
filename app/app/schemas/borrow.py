@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, condecimal
 
 
 class Status(BaseModel):
@@ -23,9 +23,10 @@ class Borrow(BaseModel):
     start_date: Optional[datetime]
     max_delivery_date: Optional[datetime]
     delivery_date: Optional[datetime]
-    borrow_price: Optional[float]
-    borrow_penalty_price: Optional[float]
-    total_price: Optional[float]
+    borrow_price: Optional[condecimal(max_digits=10, decimal_places=2)]
+    borrow_penalty_price: Optional[condecimal(max_digits=10,
+                                              decimal_places=2)]
+    total_price: Optional[condecimal(max_digits=10, decimal_places=2)]
 
 
 class BorrowCreate(Borrow):

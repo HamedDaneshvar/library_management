@@ -1,5 +1,6 @@
 import logging
 import random
+from decimal import Decimal
 from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
@@ -39,15 +40,15 @@ def create_initial_data(db: Session) -> None:
     # Add initial categories
     categories = [
         models.Category(title="Fiction", borrow_limit=5,
-                        borrow_price_per_day=1.5),
+                        borrow_price_per_day=Decimal('1.5')),
         models.Category(title="Science", borrow_limit=3,
-                        borrow_price_per_day=2.0),
+                        borrow_price_per_day=Decimal('2.0')),
         models.Category(title="History", borrow_limit=4,
-                        borrow_price_per_day=1.0),
+                        borrow_price_per_day=Decimal('1.0')),
         models.Category(title="Technology", borrow_limit=6,
-                        borrow_price_per_day=2.5),
+                        borrow_price_per_day=Decimal('2.5')),
         models.Category(title="Arts", borrow_limit=2,
-                        borrow_price_per_day=3.0),
+                        borrow_price_per_day=Decimal('3.0')),
     ]
     db.add_all(categories)
     db.commit()
@@ -55,45 +56,45 @@ def create_initial_data(db: Session) -> None:
     # Add initial books
     books = [
         models.Book(title="Book 1", category_id=1,
-                    borrow_qty=10, sell_qty=5, sell_price=15.99),
+                    borrow_qty=10, sell_qty=5, sell_price=Decimal('15.99')),
         models.Book(title="Book 2", category_id=1,
-                    borrow_qty=8, sell_qty=4, sell_price=12.99),
+                    borrow_qty=8, sell_qty=4, sell_price=Decimal('12.99')),
         models.Book(title="Book 3", category_id=2,
-                    borrow_qty=7, sell_qty=3, sell_price=20.00),
+                    borrow_qty=7, sell_qty=3, sell_price=Decimal('20.00')),
         models.Book(title="Book 4", category_id=2,
-                    borrow_qty=5, sell_qty=5, sell_price=22.50),
+                    borrow_qty=5, sell_qty=5, sell_price=Decimal('22.50')),
         models.Book(title="Book 5", category_id=3,
-                    borrow_qty=6, sell_qty=6, sell_price=18.75),
+                    borrow_qty=6, sell_qty=6, sell_price=Decimal('18.75')),
         models.Book(title="Book 6", category_id=3,
-                    borrow_qty=4, sell_qty=2, sell_price=25.00),
+                    borrow_qty=4, sell_qty=2, sell_price=Decimal('25.00')),
         models.Book(title="Book 7", category_id=4,
-                    borrow_qty=12, sell_qty=8, sell_price=30.99),
+                    borrow_qty=12, sell_qty=8, sell_price=Decimal('30.99')),
         models.Book(title="Book 8", category_id=4,
-                    borrow_qty=9, sell_qty=7, sell_price=27.50),
+                    borrow_qty=9, sell_qty=7, sell_price=Decimal('27.50')),
         models.Book(title="Book 9", category_id=5,
-                    borrow_qty=11, sell_qty=9, sell_price=35.99),
+                    borrow_qty=11, sell_qty=9, sell_price=Decimal('35.99')),
         models.Book(title="Book 10", category_id=5,
-                    borrow_qty=10, sell_qty=5, sell_price=40.00),
+                    borrow_qty=10, sell_qty=5, sell_price=Decimal('40.00')),
         models.Book(title="Book 11", category_id=1,
-                    borrow_qty=8, sell_qty=4, sell_price=12.99),
+                    borrow_qty=8, sell_qty=4, sell_price=Decimal('12.99')),
         models.Book(title="Book 12", category_id=1,
-                    borrow_qty=7, sell_qty=3, sell_price=15.99),
+                    borrow_qty=7, sell_qty=3, sell_price=Decimal('15.99')),
         models.Book(title="Book 13", category_id=2,
-                    borrow_qty=10, sell_qty=5, sell_price=18.50),
+                    borrow_qty=10, sell_qty=5, sell_price=Decimal('18.50')),
         models.Book(title="Book 14", category_id=2,
-                    borrow_qty=5, sell_qty=5, sell_price=22.99),
+                    borrow_qty=5, sell_qty=5, sell_price=Decimal('22.99')),
         models.Book(title="Book 15", category_id=3,
-                    borrow_qty=6, sell_qty=4, sell_price=16.75),
+                    borrow_qty=6, sell_qty=4, sell_price=Decimal('16.75')),
         models.Book(title="Book 16", category_id=3,
-                    borrow_qty=4, sell_qty=3, sell_price=20.00),
+                    borrow_qty=4, sell_qty=3, sell_price=Decimal('20.00')),
         models.Book(title="Book 17", category_id=4,
-                    borrow_qty=11, sell_qty=8, sell_price=28.50),
+                    borrow_qty=11, sell_qty=8, sell_price=Decimal('28.50')),
         models.Book(title="Book 18", category_id=4,
-                    borrow_qty=9, sell_qty=6, sell_price=24.99),
+                    borrow_qty=9, sell_qty=6, sell_price=Decimal('24.99')),
         models.Book(title="Book 19", category_id=5,
-                    borrow_qty=12, sell_qty=7, sell_price=32.00),
+                    borrow_qty=12, sell_qty=7, sell_price=Decimal('32.00')),
         models.Book(title="Book 20", category_id=5,
-                    borrow_qty=10, sell_qty=5, sell_price=38.75),
+                    borrow_qty=10, sell_qty=5, sell_price=Decimal('38.75')),
     ]
     db.add_all(books)
     db.commit()
@@ -103,16 +104,16 @@ def create_initial_data(db: Session) -> None:
     users = [
         models.User(full_name="Alice Johnson", email="alice@example.com",
                     hashed_password=get_password_hash("hashedpassword1"),
-                    amount=100.0),
+                    amount=Decimal('100.0')),
         models.User(full_name="Bob Smith", email="bob@example.com",
                     hashed_password=get_password_hash("hashedpassword2"),
-                    amount=150.0),
+                    amount=Decimal('150.0')),
         models.User(full_name="Charlie Brown", email="charlie@example.com",
                     hashed_password=get_password_hash("hashedpassword3"),
-                    amount=200.0),
+                    amount=Decimal('200.0')),
         models.User(full_name="Test User", email="testuser@example.com",
                     hashed_password=get_password_hash("hashed_password"),
-                    amount=100.0)
+                    amount=Decimal('100.0'))
     ]
     db.add_all(users)
     db.commit()
@@ -141,11 +142,16 @@ def create_initial_data(db: Session) -> None:
 
     # Add initial sells
     sells = [
-        models.Sell(book_id=1, user_id=random.choice(user_ids), price=15.99),
-        models.Sell(book_id=3, user_id=random.choice(user_ids), price=20.00),
-        models.Sell(book_id=5, user_id=random.choice(user_ids), price=18.75),
-        models.Sell(book_id=7, user_id=random.choice(user_ids), price=30.99),
-        models.Sell(book_id=9, user_id=random.choice(user_ids), price=35.99),
+        models.Sell(book_id=1, user_id=random.choice(user_ids),
+                    price=Decimal('15.99')),
+        models.Sell(book_id=3, user_id=random.choice(user_ids),
+                    price=Decimal('20.00')),
+        models.Sell(book_id=5, user_id=random.choice(user_ids),
+                    price=Decimal('18.75')),
+        models.Sell(book_id=7, user_id=random.choice(user_ids),
+                    price=Decimal('30.99')),
+        models.Sell(book_id=9, user_id=random.choice(user_ids),
+                    price=Decimal('35.99')),
     ]
     db.add_all(sells)
     db.commit()
@@ -159,7 +165,7 @@ def create_initial_data(db: Session) -> None:
             user_id=random.choice(user_ids),
             model_type=random.choice(model_type),
             model_id=random.randint(1, 30),
-            price=random.uniform(10, 100)
+            price=Decimal(random.uniform(10, 100))
         )
         db.add(payment)
 
@@ -178,9 +184,9 @@ def create_initial_data(db: Session) -> None:
             start_date=start_date,
             max_delivery_date=max_delivery_date,
             delivery_date=delivery_date,
-            borrow_price=random.uniform(5, 20),
-            borrow_penalty_price=random.uniform(0, 10) if delivery_date else 0,
-            total_price=random.uniform(10, 30)
+            borrow_price=Decimal(random.uniform(5, 20)),
+            borrow_penalty_price=Decimal(random.uniform(0, 10)) if delivery_date else 0,
+            total_price=Decimal(random.uniform(10, 30))
         )
         db.add(borrow)
 
@@ -196,9 +202,9 @@ def create_initial_data(db: Session) -> None:
             start_date=start_date,
             max_delivery_date=max_delivery_date,
             delivery_date=delivery_date,
-            borrow_price=random.uniform(5, 20),
-            borrow_penalty_price=random.uniform(0, 10) if delivery_date else 0,
-            total_price=random.uniform(10, 30)
+            borrow_price=Decimal(random.uniform(5, 20)),
+            borrow_penalty_price=Decimal(random.uniform(0, 10)) if delivery_date else 0,
+            total_price=Decimal(random.uniform(10, 30))
         )
         db.add(borrow)
 

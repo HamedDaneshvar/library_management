@@ -1,10 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, condecimal
 
 
 class Category(BaseModel):
     title: str
     borrow_limit: int
-    borrow_price_per_day: float
+    borrow_price_per_day: condecimal(max_digits=10, decimal_places=2)
 
 
 class CategoryCreate(Category):
@@ -14,4 +14,4 @@ class CategoryCreate(Category):
 class CategoryUpdate(Category):
     title: str | None
     borrow_limit: int | None
-    borrow_price_per_day: float | None
+    borrow_price_per_day: condecimal(max_digits=10, decimal_places=2) | None

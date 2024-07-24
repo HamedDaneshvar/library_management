@@ -1,10 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, condecimal
 
 
 class Sell(BaseModel):
     book_id: int
     user_id: int
-    price: int
+    price: condecimal(max_digits=10, decimal_places=2)
 
     class Config:
         orm_mode = True
@@ -21,7 +21,7 @@ class SellUpdate(Sell):
 class SellResponse(BaseModel):
     book_name: str
     qty: int
-    total_price: float
+    total_price: condecimal(max_digits=10, decimal_places=2)
     message: str
 
     @staticmethod

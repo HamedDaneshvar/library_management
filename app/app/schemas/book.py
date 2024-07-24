@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, condecimal
 
 
 class Book(BaseModel):
@@ -6,7 +6,7 @@ class Book(BaseModel):
     category_id: int
     borrow_qty: int
     sell_qty: int
-    sell_price: float
+    sell_price: condecimal(max_digits=10, decimal_places=2)
 
     class Config:
         orm_mode = True
@@ -21,4 +21,4 @@ class BookUpdate(Book):
     category_id: int | None
     borrow_qty: int | None
     sell_qty: int | None
-    sell_price: float | None
+    sell_price: condecimal(max_digits=10, decimal_places=2) | None

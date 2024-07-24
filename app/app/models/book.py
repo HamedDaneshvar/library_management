@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Float, Integer, String, ForeignKey
+from sqlalchemy import Boolean, Column, Numeric, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
@@ -11,7 +11,7 @@ class Book(Base):
     category_id = Column(Integer, ForeignKey('categories.id'), nullable=False)
     borrow_qty = Column(Integer, nullable=False, default=0)
     sell_qty = Column(Integer, nullable=False, default=0)
-    sell_price = Column(Float, nullable=False)
+    sell_price = Column(Numeric(10, 2), nullable=False)
     is_deleted = Column(Boolean(), nullable=False, default=False)
 
     category = relationship('Category', back_populates='books')

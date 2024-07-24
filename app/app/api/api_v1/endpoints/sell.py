@@ -1,3 +1,4 @@
+from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException
 from app.api import deps
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,7 +23,7 @@ async def check_book_for_sale(book: models.Book, qty: int):
                             detail="Book is not available for sale")
 
 
-async def check_user_balance(user: models.User, sell_price: float, qty: int):
+async def check_user_balance(user: models.User, sell_price: Decimal, qty: int):
     total_price = sell_price * qty
     if user.amount < total_price:
         raise HTTPException(status_code=400,
@@ -35,8 +36,8 @@ async def process_sale(
     user: models.User,
     book: models.Book,
     qty: int,
-    total_price: float
-) -> (models.Sell, float):
+    total_price: Decimal
+) -> (models.Sell, Decimal):
     # Reduce user balance
     user_in = schemas.UserUpdate(amount=user.amount - total_price)
     await crud.user.update(db, db_obj=user, obj_in=user_in)

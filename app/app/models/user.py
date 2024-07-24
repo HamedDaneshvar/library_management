@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Integer, Float, String
+from sqlalchemy import Boolean, Column, Integer, Numeric, String
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
@@ -10,7 +10,7 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean(), default=True)
     is_superuser = Column(Boolean(), default=False)
-    amount = Column(Float, nullable=False, default=0.0)
+    amount = Column(Numeric(10, 2), nullable=False, default=0.0)
     is_deleted = Column(Boolean(), nullable=False, default=False)
 
     sells = relationship('Sell', foreign_keys='Sell.user_id',
