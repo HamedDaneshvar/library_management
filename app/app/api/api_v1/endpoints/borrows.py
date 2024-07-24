@@ -358,15 +358,6 @@ async def delivered_book(
     book = await crud.book.update(db, db_obj=book,
                                   obj_in=book_update)
 
-    # Reducing the cost of borrowing from the user's account
-    user = crud.user.get(id=borrow.user_id)
-    new_amount = user.amount - borrow.total_price
-    user_update = schemas.UpdateAmount(
-        user_id=borrow.user_id,
-        new_amount=new_amount
-    )
-    user = await crud.user.update(db, db_obj=user, obj_in=user_update)
-
     # Insert the borrowing transaction in the payments model
     payment_create = schemas.PaymentCreate(
         book_id=borrow.book_id,
