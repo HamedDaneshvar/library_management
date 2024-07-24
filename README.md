@@ -1,5 +1,5 @@
-# fastapi-postgres-boilerplate
-This project template uses FastAPI, Alembic, SQLAlchemy as ORM, Rocketry as a scheduler, Celery as an async task manager with RabbitMQ. It demonstrates a complete async CRUD template. Additionally, I have set up a caching app with an invalidate feature using Redis.
+# Library management
+This project uses FastAPI, Alembic, SQLAlchemy as ORM, Rocketry as a scheduler, Celery as an async task manager with RabbitMQ. It demonstrates a complete async CRUD template. Additionally, I have set up a caching app with an invalidate feature using Redis.
 
 ## Project Execution and Documentation
 To run the project and access its documentation, follow the steps below:
