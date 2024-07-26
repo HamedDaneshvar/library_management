@@ -16,16 +16,16 @@ def map_books_to_schema(
 ) -> Union[List[schemas.BookOutSuperuser] | List[schemas.BookOutUser]]:
     if user.is_superuser:
         return [schemas.BookOutSuperuser(
-            title=book.title,
-            category_id=book.category_id,
-            borrow_qty=book.borrow_qty,
-            sell_qty=book.sell_qty,
-            sell_price=book.sell_price)
-            for book in books]
+                title=book.title,
+                category=book.category,
+                borrow_qty=book.borrow_qty,
+                sell_qty=book.sell_qty,
+                sell_price=book.sell_price,)
+                for book in books]
     else:
         return [schemas.BookOutUser(
                 title=book.title,
-                category_id=book.category_id)
+                category=book.category)
                 for book in books]
 
 
@@ -140,7 +140,7 @@ async def delete_book(
     id: int,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
-):
+) -> APIResponseType[schemas.BookDelete]:
     """
     delete a book
     """

@@ -1,4 +1,5 @@
 from pydantic import BaseModel, condecimal
+from .category import CategoryOutUser, CategoryOutSuperuser
 
 
 class Book(BaseModel):
@@ -26,11 +27,15 @@ class BookUpdate(Book):
 
 class BookOutUser(BaseModel):
     title: str
-    category_id: int
+    category: CategoryOutUser
 
 
-class BookOutSuperuser(Book):
-    pass
+class BookOutSuperuser(BaseModel):
+    title: str | None
+    category: CategoryOutSuperuser
+    borrow_qty: int | None
+    sell_qty: int | None
+    sell_price: condecimal(max_digits=10, decimal_places=2) | None
 
 
 class BookDelete(BaseModel):
