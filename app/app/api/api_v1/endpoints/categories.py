@@ -11,13 +11,31 @@ router = APIRouter()
 namespace = "category"
 
 
+def map_categories_to_schema(
+    user: models.Category,
+    categories: List[models.Category]
+) -> Union[List[schemas.CategoryOutSuperuser] | List[schemas.CategoryOutUser]]:
+    if user.is_superuser:
+        return [schemas.CategoryOutSuperuser(
+                title=cat.title,
+                borrow_limit=cat.borrow_limit,
+                borrow_price_per_day=cat.borrow_price_per_day)
+                for cat in categories]
+    else:
+        return [schemas.CategoryOutUser(
+                title=cat.title,
+                borrow_price_per_day=cat.borrow_price_per_day)
+                for cat in categories]
+
+
 @router.get("/")
 async def get_categories(
     skip: int = 0,
     limit: int = 10,
     db: AsyncSession = Depends(deps.get_db_async),
-    # current_user: models.User = Depends(deps.get_current_user),
-) -> APIResponseType[List[schemas.CategoryOut]]:
+    current_user: models.User = Depends(deps.get_current_user),
+) -> APIResponseType[Union[List[schemas.CategoryOutSuperuser] |
+                           List[schemas.CategoryOutUser]]]:
     """
     Retrieve categories.
     """
@@ -31,10 +49,7 @@ async def get_categories(
         limit=limit,
         is_deleted=False
     )
-    categories = [schemas.CategoryOut(
-        title=cat.title,
-        borrow_limit=cat.borrow_limit,
-        borrow_price_per_day=cat.borrow_price_per_day) for cat in categories]
+    categories = map_categories_to_schema(current_user, categories)
     return APIResponse(categories)
 
 
@@ -42,8 +57,9 @@ async def get_categories(
 async def get_category(
     id: int,
     db: AsyncSession = Depends(deps.get_db_async),
-    # current_user: models.User = Depends(deps.get_current_user),
-) -> APIResponseType[schemas.CategoryOut]:
+    current_user: models.User = Depends(deps.get_current_user),
+) -> APIResponseType[Union[schemas.CategoryOutSuperuser |
+                           schemas.CategoryOutUser]]:
     """
     Retrieve a category.
     """
@@ -55,12 +71,7 @@ async def get_category(
     if not category or category.is_deleted:
         raise HTTPException(status_code=404, detail="Category not found")
 
-    category = schemas.CategoryOut(
-        title=category.title,
-        borrow_limit=category.borrow_limit,
-        borrow_price_per_day=category.borrow_price_per_day
-    )
-
+    category = map_categories_to_schema(current_user, [category])[0]
     return APIResponse(category)
 
 
@@ -69,7 +80,7 @@ async def create_category(
     category_in: schemas.CategoryCreate,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
-) -> APIResponseType[schemas.CategoryOut]:
+) -> APIResponseType[schemas.CategoryOutSuperuser]:
     """
     Create a new category
     """
@@ -77,11 +88,7 @@ async def create_category(
         raise HTTPException(status_code=401, detail="Unauthorized access")
 
     category = await crud.category.create(db, obj_in=category_in)
-    category = schemas.CategoryOut(
-        title=category.title,
-        borrow_limit=category.borrow_limit,
-        borrow_price_per_day=category.borrow_price_per_day
-    )
+    category = map_categories_to_schema(current_user, [category])[0]
     return APIResponse(category)
 
 
@@ -91,7 +98,7 @@ async def update_category(
     request: schemas.CategoryUpdate,
     db: AsyncSession = Depends(deps.get_db_async),
     current_user: models.User = Depends(deps.get_current_user),
-) -> APIResponseType[schemas.CategoryOut]:
+) -> APIResponseType[schemas.CategoryOutSuperuser]:
     """
     update a category
     """
@@ -115,11 +122,7 @@ async def update_category(
         db,
         db_obj=category_in,
     )
-    category = schemas.CategoryOut(
-        title=category.title,
-        borrow_limit=category.borrow_limit,
-        borrow_price_per_day=category.borrow_price_per_day
-    )
+    category = map_categories_to_schema(current_user, [category])[0]
     return APIResponse(category)
 
 

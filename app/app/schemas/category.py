@@ -22,5 +22,18 @@ class CategoryOut(Category):
         orm_mode = True
 
 
+class CategoryOutUser(BaseModel):
+    title: str
+    borrow_price_per_day: condecimal(max_digits=10, decimal_places=2)
+
+    class Config:
+        orm_mode = True
+
+
+class CategoryOutSuperuser(Category):
+    class Config:
+        orm_mode = True
+
+
 class CategoryDelete(BaseModel):
     message: str = "Item deleted successfully"
